@@ -47,4 +47,6 @@ anchor/target/.rustc_info.json
 test-ledger
 .yarn
 
+# local env files
+.env*.local
 .env
