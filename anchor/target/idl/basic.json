@@ -1,0 +1,17 @@
+{
+  "address": "269b8hnbGcCCTVc2GjMJmLi3fLVU3PYBZiSznb42b5eD",
+  "metadata": {
+    "name": "basic",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "greet",
+      "discriminator": [203, 194, 3, 150, 228, 58, 181, 62],
+      "accounts": [],
+      "args": []
+    }
+  ]
+}
