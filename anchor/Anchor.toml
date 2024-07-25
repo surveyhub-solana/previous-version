@@ -4,14 +4,14 @@
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-basic = "269b8hnbGcCCTVc2GjMJmLi3fLVU3PYBZiSznb42b5eD"
+[programs.devnet]
+surveyhub = "269b8hnbGcCCTVc2GjMJmLi3fLVU3PYBZiSznb42b5eD"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
