@@ -1,9 +1,9 @@
 "use client";
-import { GetForms } from "@/action/form";
 import FormBuilder from "@/components/FormBuilder";
 import React, { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Form } from "@prisma/client";
+import { Form } from "@/app/services/type";
+import { getForm } from "@/app/services/form";
 
 export default function BuilderPage({
   params,
@@ -14,7 +14,7 @@ export default function BuilderPage({
 }) {
   const { id } = params;
 
-  const [form, setForm] = useState<Form[]>([]);
+  const [form, setForm] = useState<Form>();
   const { publicKey } = useWallet();
   useEffect(() => {
     async function getFormsFromServer() {
@@ -22,14 +22,14 @@ export default function BuilderPage({
         return;
       } else {
         try {
-          const fetchedForm = await GetForms(publicKey?.toString(), Number(id));
+          const fetchedForm: Form | null = await getForm(id);
           if (!fetchedForm) {
             throw new Error("form not found");
           }
-          console.log(fetchedForm);
           setForm(fetchedForm);
         } catch (error) {
           console.error("Error fetching stats:", error);
+          return
         }
       }
     }
@@ -40,8 +40,8 @@ export default function BuilderPage({
   return (
     <>
       {!publicKey && <div>Bạn chưa đăng nhập ví</div>}
-      {publicKey && form.length != 0 && (
-        <FormBuilder publicKey={publicKey?.toString()} form={form[0]} />
+      {publicKey && form != null && (
+        <FormBuilder publicKey={publicKey?.toString()} form={form} />
       )}
     </>
   );

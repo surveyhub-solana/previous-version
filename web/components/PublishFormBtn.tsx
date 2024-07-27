@@ -1,10 +1,8 @@
-"use client";
+'use client';
 
-import { PublishForm, UpdateForm } from "@/action/form";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { FaSpinner } from "react-icons/fa";
-import { MdOutlinePublish } from "react-icons/md";
+import { useState, useTransition } from 'react';
+import { FaSpinner } from 'react-icons/fa';
+import { MdOutlinePublish } from 'react-icons/md';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,23 +13,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./ui/alert-dialog";
-import { Button } from "./ui/button";
-import { toast } from "./ui/use-toast";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { getAuthorBalance, transferSOLToSystem } from "@/lib/solana";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
-import { Input } from "./ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { updateFormSchema, updateFormSchemaType } from "@/schemas/form";
+} from './ui/alert-dialog';
+import { Button } from './ui/button';
+import { toast } from './ui/use-toast';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
+import { Input } from './ui/input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { updateFormSchema, updateFormSchemaType } from '@/schemas/form';
+import { publishForm, updateFormSOL } from '@/app/services/form';
 
-function PublishFormBtn({ id, publicKey }: { id: number; publicKey: string }) {
+function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
   const [isPending, startTransition] = useTransition();
   const [isPublishing, setIsPublishing] = useState(false);
   const wallet = useWallet();
   const { connection } = useConnection();
-  const router = useRouter(); // useRouter phải được đặt trong thành phần React
   const form = useForm<updateFormSchemaType>({
     resolver: zodResolver(updateFormSchema),
     defaultValues: {
@@ -45,67 +42,84 @@ function PublishFormBtn({ id, publicKey }: { id: number; publicKey: string }) {
     try {
       if (!publicKey) {
         toast({
-          title: "Error",
-          description: "You are not logged in to the wallet",
+          title: 'Error',
+          description: 'You are not logged in to the wallet',
         });
         return;
       }
 
-      const authorSOL = await getAuthorBalance(connection, wallet);
-      console.log("Author SOL balance:", authorSOL);
-
       if (values.sumSOL >= 0 && values.SOLPerUser >= 0) {
-        if (authorSOL >= values.sumSOL) {
-          if (values.sumSOL !== 0 && values.SOLPerUser !== 0) {
-            const resultTransfer = await transferSOLToSystem(
-              connection,
-              wallet,
-              values.sumSOL
-            );
+        if (values.sumSOL !== 0 && values.SOLPerUser !== 0) {
+          const transactionAndId = await updateFormSOL({
+            id: id,
+            sum_sol: values.sumSOL,
+            sol_per_user: values.SOLPerUser,
+            ownerPubkey: publicKey.toString(),
+          });
 
-            if (!resultTransfer.success) {
+          if (transactionAndId) {
+            // Ký giao dịch bằng ví của người dùng (ở phía client)
+            if (wallet.signTransaction) {
+              // Ký giao dịch bằng ví của người dùng (ở phía client)
+              const signedTx = await wallet.signTransaction(
+                transactionAndId.tx
+              );
+
+              // Phát sóng giao dịch lên mạng Solana
+              const txId = await connection.sendRawTransaction(
+                signedTx.serialize()
+              );
+              console.log('Transaction ID:', txId);
               toast({
-                title: "Error",
-                description: resultTransfer.message,
+                title: 'Success',
+                description: 'Form updated successfully',
               });
-              return;
+            } else {
+              console.error('Wallet does not support signing transactions');
+              toast({
+                title: 'Error',
+                description: 'Wallet does not support signing transactions',
+                variant: 'destructive',
+              });
             }
-          }
-
-          const formId = await UpdateForm(publicKey, id, values);
-
-          if (formId === id) {
-            await PublishForm(publicKey, id);
-            toast({
-              title: "Success",
-              description: "Your form is now available to the public",
-            });
-            window.location.href = `/dashboard/builder/${id}`;
           } else {
             toast({
-              title: "Error",
-              description: "Something went wrong, please try again later",
-              variant: "destructive",
+              title: 'Error',
+              description: 'Error initiating a transaction from the server',
+              variant: 'destructive',
             });
           }
-        } else {
+        }
+
+        const formId = await publishForm({
+          id,
+          ownerPubkey: publicKey.toString(),
+        });
+        if (formId && formId == id) {
           toast({
-            title: "Error",
-            description: "Not enough SOL balance",
+            title: 'Success',
+            description: 'Your form is now available to the public',
+          });
+          window.location.href = `/dashboard/builder/${id}`;
+        }
+        else {
+          toast({
+            title: 'Error',
+            description: 'Errors when publishing forms',
           });
         }
       } else {
         toast({
-          title: "Error",
-          description: "Invalid parameter",
+          title: 'Error',
+          description: 'Invalid parameter',
         });
       }
     } catch (error) {
-      console.error("Error during form submission:", error);
+      console.error('Error during form submission:', error);
       toast({
-        title: "Error",
-        description: "Something went wrong, please try again later",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Something went wrong, please try again later',
+        variant: 'destructive',
       });
     } finally {
       setIsPublishing(false);

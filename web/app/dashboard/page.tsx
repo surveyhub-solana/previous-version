@@ -1,5 +1,4 @@
-"use client";
-import GetFormStats, { GetForms } from "@/action/form";
+'use client';
 import {
   Card,
   CardContent,
@@ -7,24 +6,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ReactNode, Suspense, useEffect, useState } from "react";
-import { LuView } from "react-icons/lu";
-import { FaEdit } from "react-icons/fa";
-import { FaWpforms } from "react-icons/fa";
-import { HiCursorClick } from "react-icons/hi";
-import { TbArrowBounce } from "react-icons/tb";
-import { BiRightArrowAlt } from "react-icons/bi";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Separator } from "@/components/ui/separator";
-import CreateFormBtn from "@/components/CreateFormBtn";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Form } from "@prisma/client";
-import { formatDistance } from "date-fns";
-import StatsCard from "@/components/StatsCard";
+} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense, useEffect, useState } from 'react';
+import { LuView } from 'react-icons/lu';
+import { FaEdit } from 'react-icons/fa';
+import { FaWpforms } from 'react-icons/fa';
+import { HiCursorClick } from 'react-icons/hi';
+import { TbArrowBounce } from 'react-icons/tb';
+import { BiRightArrowAlt } from 'react-icons/bi';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { Separator } from '@/components/ui/separator';
+import CreateFormBtn from '@/components/CreateFormBtn';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { formatDistance } from 'date-fns';
+import StatsCard from '@/components/StatsCard';
+import { getOwnForms, getStats } from '../services/form';
+import { Form } from '../services/type';
 
 export default function Home() {
   return (
@@ -71,10 +71,10 @@ function CardStatsWrapper() {
       }
 
       try {
-        const fetchedStats = await GetFormStats(publicKey?.toString());
-        setStats(fetchedStats);
+        const fetchedStats = await getStats(publicKey?.toString());
+        if (fetchedStats) setStats(fetchedStats);
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        console.error('Error fetching stats:', error);
       } finally {
         setLoading(false);
       }
@@ -86,7 +86,12 @@ function CardStatsWrapper() {
   return <StatsCards loading={loading} data={stats} />;
 }
 interface StatsCardProps {
-  data?: Awaited<ReturnType<typeof GetFormStats>>;
+  data?: {
+    visits: number;
+    submissions: number;
+    submissionRate: number;
+    bounceRate: number;
+  };
   loading: boolean;
 }
 
@@ -99,7 +104,7 @@ function StatsCards(props: StatsCardProps) {
         title="Total visits"
         icon={<LuView className="text-blue-600" />}
         helperText="All time form visits"
-        value={data?.visits.toLocaleString() || ""}
+        value={data?.visits.toLocaleString() || ''}
         loading={loading}
         className="shadow-md shadow-blue-600"
       />
@@ -108,7 +113,7 @@ function StatsCards(props: StatsCardProps) {
         title="Total submissions"
         icon={<FaWpforms className="text-yellow-600" />}
         helperText="All time form submissions"
-        value={data?.submissions.toLocaleString() || ""}
+        value={data?.submissions.toLocaleString() || ''}
         loading={loading}
         className="shadow-md shadow-yellow-600"
       />
@@ -117,7 +122,7 @@ function StatsCards(props: StatsCardProps) {
         title="Submission rate"
         icon={<HiCursorClick className="text-green-600" />}
         helperText="Visits that result in form submission"
-        value={data?.submissionRate.toLocaleString() + "%" || ""}
+        value={data?.submissionRate.toLocaleString() + '%' || ''}
         loading={loading}
         className="shadow-md shadow-green-600"
       />
@@ -126,16 +131,13 @@ function StatsCards(props: StatsCardProps) {
         title="Bounce rate"
         icon={<TbArrowBounce className="text-red-600" />}
         helperText="Visits that leaves without interacting"
-        value={data?.bounceRate.toLocaleString() + "%" || ""}
+        value={data?.bounceRate.toLocaleString() + '%' || ''}
         loading={loading}
         className="shadow-md shadow-red-600"
       />
     </div>
   );
 }
-
-
-
 
 function FormCardSkeleton() {
   return <Skeleton className="border-2 border-primary-/20 h-[190px] w-full" />;
@@ -151,10 +153,11 @@ function FormCards() {
       }
 
       try {
-        const fetchedForms = await GetForms(publicKey?.toString());
-        setForms(fetchedForms);
+        const fetchedForms = await getOwnForms(publicKey?.toString());
+        console.log(fetchedForms);
+        if (fetchedForms) setForms(fetchedForms);
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        console.error('Error fetching stats:', error);
       }
     }
 
@@ -170,18 +173,23 @@ function FormCards() {
 }
 
 function FormCard({ form }: { form: Form }) {
+  const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000;
+  const createdAtDate = new Date(createdAtTimestamp);
+  const isValidDate = !isNaN(createdAtDate.getTime());
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 justify-between">
           <span className="truncate font-bold">{form.name}</span>
           {form.published && <Badge>Published</Badge>}
-          {!form.published && <Badge variant={"destructive"}>Draft</Badge>}
+          {!form.published && <Badge variant={'destructive'}>Draft</Badge>}
         </CardTitle>
         <CardDescription className="flex items-center justify-between text-muted-foreground text-sm">
-          {formatDistance(form.createdAt, new Date(), {
-            addSuffix: true,
-          })}
+          {isValidDate
+            ? formatDistance(createdAtDate, new Date(), {
+                addSuffix: true,
+              })
+            : 'Ngày không hợp lệ'}
           {form.published && (
             <span className="flex items-center gap-2">
               <LuView className="text-muted-foreground" />
@@ -193,7 +201,7 @@ function FormCard({ form }: { form: Form }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="h-[20px] truncate text-sm text-muted-foreground">
-        {form.description || "No description"}
+        {form.description || 'No description'}
       </CardContent>
       <CardFooter>
         {form.published && (
@@ -206,7 +214,7 @@ function FormCard({ form }: { form: Form }) {
         {!form.published && (
           <Button
             asChild
-            variant={"secondary"}
+            variant={'secondary'}
             className="w-full mt-2 text-md gap-4"
           >
             <Link href={`dashboard/builder/${form.id}`}>

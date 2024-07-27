@@ -10,5 +10,7 @@ pub enum ErrorCode {
     FormCannotBeEdited, // 6003
     #[msg("Failed to transfer SOL.")]
     TransferFailed, // 6004
+     #[msg("Unavailable balance.")]
+    UnavailableBalance, // 6005
     // Thêm các mã lỗi khác tại đây nếu cần
 }

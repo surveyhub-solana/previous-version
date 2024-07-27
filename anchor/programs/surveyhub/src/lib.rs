@@ -8,15 +8,15 @@ pub use schema::*;
 
 pub mod instructions;
 pub use instructions::*;
-declare_id!("269b8hnbGcCCTVc2GjMJmLi3fLVU3PYBZiSznb42b5eD");
+declare_id!("8XEbkhydCyZSPqvsfRmE2s4p1YbBQeMabY8DXu92B54E");
 
 
 #[program]
 pub mod solana_program {
     use super::*;
 
-    pub fn create_form(ctx: Context<CreateForm>, id: String) -> Result<()> {
-        create_form::exec(ctx, id)
+    pub fn create_form(ctx: Context<CreateForm>, id: String, name: String, description: String) -> Result<()> {
+        create_form::exec(ctx, id, name, description)
     }
 
 
@@ -32,10 +32,15 @@ pub mod solana_program {
         publish_form::exec(ctx)
     }
 
-    pub fn submit_form(ctx: Context<SubmitForm>, content: String) -> Result<()> {
-        submit_form::exec(ctx, content)
+    pub fn submit_form(ctx: Context<SubmitForm>, content: String, submission_id: String) -> Result<()> {
+        submit_form::exec(ctx, content, submission_id)
     }
-
+    pub fn delete_form(ctx: Context<DeleteForm>) -> Result<()> {
+        delete_form::exec(ctx)
+    }
+    pub fn visit_form(ctx: Context<VisitForm>) -> Result<()> {
+        visit_form::exec(ctx)
+    }
 }
 
 

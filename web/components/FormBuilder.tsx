@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import { Form } from "@prisma/client";
-import React, { useEffect, useState } from "react";
-import PreviewDialogBtn from "./PreviewDialogBtn";
-import PublishFormBtn from "./PublishFormBtn";
-import SaveFormBtn from "./SaveFormBtn";
-import Designer from "./Designer";
+import React, { useEffect, useState } from 'react';
+import PreviewDialogBtn from './PreviewDialogBtn';
+import PublishFormBtn from './PublishFormBtn';
+import SaveFormBtn from './SaveFormBtn';
+import Designer from './Designer';
 import {
   DndContext,
   MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import DragOverlayWrapper from "./DragOverlayWrapper";
-import useDesigner from "./hooks/useDesigner";
-import { ImSpinner2 } from "react-icons/im";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { toast } from "./ui/use-toast";
-import Link from "next/link";
-import { BsArrowLeft, BsArrowRight } from "react-icons/bs";
-import Confetti from "react-confetti";
+} from '@dnd-kit/core';
+import DragOverlayWrapper from './DragOverlayWrapper';
+import useDesigner from './hooks/useDesigner';
+import { ImSpinner2 } from 'react-icons/im';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { toast } from './ui/use-toast';
+import Link from 'next/link';
+import { BsArrowLeft, BsArrowRight } from 'react-icons/bs';
+import Confetti from 'react-confetti';
+import { Form } from '@/app/services/type';
 
-function FormBuilder({ form, publicKey }: { form: Form, publicKey: string }) {
+function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
   const { setElements, setSelectedElement } = useDesigner();
   const [isReady, setIsReady] = useState(false);
 
@@ -44,7 +44,7 @@ function FormBuilder({ form, publicKey }: { form: Form, publicKey: string }) {
 
   useEffect(() => {
     if (isReady) return;
-    const elements = JSON.parse(form.content);
+    const elements = JSON.parse(form.content.toString());
     setElements(elements);
     setSelectedElement(null);
     const readyTimeout = setTimeout(() => setIsReady(true), 500);
@@ -59,7 +59,7 @@ function FormBuilder({ form, publicKey }: { form: Form, publicKey: string }) {
     );
   }
 
-  const shareUrl = `${window.location.origin}/submit/${form.shareURL}`;
+  const shareUrl = `${window.location.origin}/submit/${form.id}`;
 
   if (form.published) {
     return (
@@ -86,8 +86,8 @@ function FormBuilder({ form, publicKey }: { form: Form, publicKey: string }) {
                 onClick={() => {
                   navigator.clipboard.writeText(shareUrl);
                   toast({
-                    title: "Copied!",
-                    description: "Link copied to clipboard",
+                    title: 'Copied!',
+                    description: 'Link copied to clipboard',
                   });
                 }}
               >
@@ -95,13 +95,13 @@ function FormBuilder({ form, publicKey }: { form: Form, publicKey: string }) {
               </Button>
             </div>
             <div className="flex justify-between">
-              <Button variant={"link"} asChild>
-                <Link href={"/"} className="gap-2">
+              <Button variant={'link'} asChild>
+                <Link href={'/'} className="gap-2">
                   <BsArrowLeft />
                   Go back home
                 </Link>
               </Button>
-              <Button variant={"link"} asChild>
+              <Button variant={'link'} asChild>
                 <Link href={`/dashboard/forms/${form.id}`} className="gap-2">
                   Form details
                   <BsArrowRight />

@@ -1,24 +1,58 @@
-import { GetFormContentByUrl } from "@/action/form";
-import { FormElementInstance } from "@/components/FormElements";
-import FormSubmitComponent from "@/components/FormSubmitComponent";
-import React from "react";
+'use client';
+import { useEffect, useState } from 'react';
+import { getForm } from '@/app/services/form';
+import { FormElementInstance } from '@/components/FormElements';
+import FormSubmitComponent from '@/components/FormSubmitComponent';
+import { useWallet } from '@solana/wallet-adapter-react';
+import React from 'react';
 
-async function SubmitPage({
+function SubmitPage({
   params,
 }: {
   params: {
     formUrl: string;
   };
 }) {
-  const form = await GetFormContentByUrl(params.formUrl);
+  const { publicKey } = useWallet();
+  const [formContent, setFormContent] = useState<FormElementInstance[] | null>(
+    null
+  );
+  const [error, setError] = useState<string | null>(null);
 
-  if (!form) {
-    throw new Error("form not found");
+  useEffect(() => {
+    const fetchForm = async () => {
+      try {
+        const form = await getForm(params.formUrl);
+        if (!form) {
+          throw new Error('form not found');
+        }
+        setFormContent(JSON.parse(form.content) as FormElementInstance[]);
+      } catch (error) {
+        setError(String(error));
+      }
+    };
+
+    if (publicKey) {
+      fetchForm();
+    }
+  }, [publicKey, params.formUrl]);
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
-  const formContent = JSON.parse(form.content) as FormElementInstance[];
-
-  return <FormSubmitComponent formUrl={params.formUrl} content={formContent} />;
+  return (
+    <>
+      {!publicKey && <div>Bạn chưa đăng nhập ví</div>}
+      {publicKey && formContent && (
+        <FormSubmitComponent
+          formUrl={params.formUrl}
+          content={formContent}
+          author={publicKey.toString()}
+        />
+      )}
+    </>
+  );
 }
 
 export default SubmitPage;

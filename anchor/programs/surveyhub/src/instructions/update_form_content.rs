@@ -8,24 +8,29 @@ pub struct UpdateFormContent<'info> {
     #[account(mut,
         seeds = [id.as_bytes(), owner.key().as_ref()],
         bump,
-        realloc = 8 + 4 + id.len() + 32 + 8 + 4 + new_content.len() + 4 + 4 + 8 + 8 + 1,
-        realloc::payer = owner,
-        realloc::zero = true)]
+        realloc = form.get_current_size() + (new_content.len() - form.get_current_content_len()),
+        realloc::payer = system,
+        realloc::zero = false)]
     pub form: Account<'info, Form>,
     #[account(mut)]
     pub owner: Signer<'info>,
+    #[account(mut)]
+    pub system: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn exec(ctx: Context<UpdateFormContent>, _id: String, new_content: String) -> Result<()> {
+pub fn exec(
+    ctx: Context<UpdateFormContent>,
+    _id: String,
+    new_content: String
+) -> Result<()> {
     let form = &mut ctx.accounts.form;
-
     // Kiểm tra quyền sở hữu form
-    if form.owner != *ctx.accounts.owner.key {
+    if form.owner != ctx.accounts.owner.key() {
         return Err(ErrorCode::Unauthorized.into());
     }
 
-    // Ví dụ: form không thể sửa nếu đã được xuất bản
+    // Kiểm tra xem form đã được xuất bản chưa
     if form.published {
         return Err(ErrorCode::FormCannotBeEdited.into());
     }

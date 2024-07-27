@@ -1,5 +1,4 @@
 "use client";
-import GetFormStats, { GetForms, GetFormWithSubmissions } from "@/action/form";
 import FormLinkShare from "@/components/FormLinkShare";
 import VisitBtn from "@/components/VisitBtn";
 import React, { ReactNode, useEffect, useState } from "react";
@@ -21,7 +20,9 @@ import { format, formatDistance } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Form, FormSubmissions } from "@prisma/client";
+import { FormSubmissions } from "@prisma/client";
+import { getForm, getFormWithSubmissions, getStats } from "@/app/services/form";
+import { Form } from "@/app/services/type";
 
 export default function FormDetailPage({
   params,
@@ -32,7 +33,7 @@ export default function FormDetailPage({
 }) {
   const { id } = params;
   const { publicKey } = useWallet();
-  const [form, setForm] = useState<Form[]>([]);
+  const [form, setForm] = useState<Form>();
   const [stats, setStats] = useState({
     visits: 0,
     submissions: 0,
@@ -45,19 +46,23 @@ export default function FormDetailPage({
         return;
       } else {
         try {
-          const fetchedForm = await GetForms(publicKey?.toString(), Number(id));
-          if (!fetchedForm) {
-            throw new Error("form not found");
+          try {
+            const fetchedForm: Form | null = await getForm(id);
+            if (!fetchedForm) {
+              throw new Error('form not found');
+            }
+            setForm(fetchedForm);
+          } catch (error) {
+            console.error('Error fetching stats:', error);
+            return;
           }
-          setForm(fetchedForm);
-          const statsCurrentForm = await GetFormStats(
-            publicKey?.toString(),
-            Number(id)
-          );
-          if (!statsCurrentForm) {
-            throw new Error("form not found");
+          try {
+            const fetchedStats = await getStats(publicKey?.toString());
+            if (fetchedStats) setStats(fetchedStats);
+          } catch (error) {
+            console.error('Error fetching stats:', error);
+            return
           }
-          setStats(statsCurrentForm);
         } catch (error) {
           console.error("Error fetching stats:", error);
         }
@@ -66,22 +71,21 @@ export default function FormDetailPage({
 
     getFormFromServer();
   }, [publicKey]);
-  // const form = await GetForms(Number(id));
 
   return (
     <>
       {!publicKey && <div>Bạn chưa đăng nhập ví</div>}
-      {publicKey && form.length != 0 && (
+      {publicKey && form && (
         <>
           <div className="py-10 border-b border-muted">
             <div className="flex justify-between container">
-              <h1 className="text-4xl font-bold truncate">{form[0].name}</h1>
-              <VisitBtn shareUrl={form[0].shareURL} />
+              <h1 className="text-4xl font-bold truncate">{form.name}</h1>
+              <VisitBtn shareUrl={form.id} />
             </div>
           </div>
           <div className="py-4 border-b border-muted">
             <div className="container flex gap-2 items-center justify-between">
-              <FormLinkShare shareUrl={form[0].shareURL} />
+              <FormLinkShare shareUrl={form.id} />
             </div>
           </div>
           <div className="w-full pt-8 gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 container">
@@ -125,7 +129,7 @@ export default function FormDetailPage({
           <div className="container pt-10">
             <SubmissionsTable
               publicKey={publicKey.toString()}
-              id={form[0].id}
+              id={form.id}
             />
           </div>
         </>
@@ -150,13 +154,16 @@ function SubmissionsTable({
   id,
 }: {
   publicKey: string;
-  id: number;
+  id: string;
 }) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   useEffect(() => {
     async function fetchSubmissions() {
-      const form = await GetFormWithSubmissions(publicKey, id);
+      const { form, submissions } = await getFormWithSubmissions({
+        id,
+        ownerPubkey: publicKey,
+      });
       setColumns([]);
       setRows([]);
       if (!form) {
@@ -188,7 +195,7 @@ function SubmissionsTable({
         }
       });
 
-      form.FormSubmissions.forEach((submission: FormSubmissions) => {
+      submissions.forEach((submission: FormSubmissions) => {
         const content = JSON.parse(submission.content);
         setRows((prevRows) => [
           ...prevRows,
@@ -247,16 +254,19 @@ function RowCell({ type, value }: { type: ElementsType; value: string }) {
   let node: ReactNode = value;
 
   switch (type) {
-    case "DateField":
+    case 'DateField': {
       if (!value) break;
       const date = new Date(value);
-      node = <Badge variant={"outline"}>{format(date, "dd/MM/yyyy")}</Badge>;
+      node = <Badge variant={'outline'}>{format(date, 'dd/MM/yyyy')}</Badge>;
       break;
-    case "CheckboxField":
-      const checked = value === "true";
+    }
+    case 'CheckboxField': {
+      const checked = value === 'true';
       node = <Checkbox checked={checked} disabled />;
       break;
+    }
   }
 
   return <TableCell>{node}</TableCell>;
 }
+

@@ -11,7 +11,7 @@ class UserNotFound extends Error {}
 
 export default async function GetFormStats(
   publicKey: string,
-  id: number = NaN
+  id = NaN
 ) {
   if (!publicKey) {
     throw new UserNotFound();
@@ -78,7 +78,7 @@ export async function CreateForm(publicKey: string, data: formSchemaType) {
   return form.id;
 }
 
-export async function GetForms(publicKey: string, id: number = NaN) {
+export async function GetForms(publicKey: string, id = NaN) {
   if (!publicKey) {
     throw new UserNotFound();
   }
@@ -88,10 +88,11 @@ export async function GetForms(publicKey: string, id: number = NaN) {
       AND: [!isNaN(id) ? { id: id } : {}, { userPubkey: publicKey }],
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 }
+
 export async function UpdateFormContent(
   publicKey: string,
   id: number,

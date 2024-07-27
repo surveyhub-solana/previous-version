@@ -1,47 +1,82 @@
-import React, { useTransition } from "react";
-import { Button } from "./ui/button";
-import { HiSaveAs } from "react-icons/hi";
-import useDesigner from "./hooks/useDesigner";
-import { UpdateFormContent } from "@/action/form";
-import { toast } from "./ui/use-toast";
-import { FaSpinner } from "react-icons/fa";
-import { useWallet } from "@solana/wallet-adapter-react";
+import React, { useTransition } from 'react';
+import { Button } from './ui/button';
+import { HiSaveAs } from 'react-icons/hi';
+import useDesigner from './hooks/useDesigner';
+import { toast } from './ui/use-toast';
+import { FaSpinner } from 'react-icons/fa';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { updateFormContent } from '@/app/services/form';
+import { Connection } from '@solana/web3.js';
+import { DEFAULT_COMMITMENT, NODE_URL } from '@/config/anchor/constants';
 
-function SaveFormBtn({ id }: { id: number }) {
+function SaveFormBtn({ id }: { id: string }) {
   const { elements } = useDesigner();
   const [loading, startTransition] = useTransition();
   const { publicKey } = useWallet();
+  const wallet = useWallet();
+  const connection = new Connection(NODE_URL, DEFAULT_COMMITMENT);
 
-  const updateFormContent = async () => {
+  const updateForm = async () => {
     try {
       const jsonElements = JSON.stringify(elements);
       if (!publicKey) {
         toast({
-          title: "Error",
-          description: "You are not logged in to the wallet",
+          title: 'Error',
+          description: 'You are not logged in to the wallet',
         });
       } else {
-        await UpdateFormContent(publicKey?.toString(), id, jsonElements);
-        toast({
-          title: "Success",
-          description: "Your form has been saved",
+        const transactionAndId = await updateFormContent({
+          id: id,
+          new_content: jsonElements,
+          ownerPubkey: publicKey.toString(),
         });
+        if (transactionAndId) {
+          // Ký giao dịch bằng ví của người dùng (ở phía client)
+          if (wallet.signTransaction) {
+            // Ký giao dịch bằng ví của người dùng (ở phía client)
+            const signedTx = await wallet.signTransaction(transactionAndId.tx);
+
+            // Phát sóng giao dịch lên mạng Solana
+            const txId = await connection.sendRawTransaction(
+              signedTx.serialize()
+            );
+            console.log('Transaction ID:', txId);
+            toast({
+              title: 'Success',
+              description: 'Form updated successfully',
+            });
+          } else {
+            console.error('Wallet does not support signing transactions');
+            toast({
+              title: 'Error',
+              description: 'Wallet does not support signing transactions',
+              variant: 'destructive',
+            });
+          }
+        } else {
+          toast({
+            title: 'Error',
+            description: 'Error initiating a transaction from the server',
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error) {
+      console.log(error);
       toast({
-        title: "Error",
-        description: "Something went wrong",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Something went wrong here',
+        variant: 'destructive',
       });
     }
   };
   return (
     <Button
-      variant={"outline"}
+      variant={'outline'}
       className="gap-2"
       disabled={loading}
       onClick={() => {
-        startTransition(updateFormContent);
+        startTransition(updateForm);
       }}
     >
       <HiSaveAs className="h-4 w-4" />

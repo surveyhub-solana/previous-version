@@ -12,3 +12,9 @@ pub use update_form_content::*;
 
 pub mod update_form_sol;
 pub use update_form_sol::*;
+
+pub mod delete_form;
+pub use delete_form::*;
+
+pub mod visit_form;
+pub use visit_form::*;

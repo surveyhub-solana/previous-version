@@ -3,12 +3,8 @@ import NavBar from "@/components/NavBar";
 import AppWalletProvider from "../components/wallet/AppWalletProvider";
 import "./globals.css";
 import DesignerContextProvider from "@/components/context/DesignerContext";
-import Logo from "@/components/Logo";
 import { Toaster } from "@/components/ui/toaster";
-import { getAuthorBalance } from "@/lib/solana";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import React, { ReactNode, useEffect, useState } from "react";
+import React from "react";
 
 export default function RootLayout({
   children,
