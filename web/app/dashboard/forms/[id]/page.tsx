@@ -1,13 +1,13 @@
-"use client";
-import FormLinkShare from "@/components/FormLinkShare";
-import VisitBtn from "@/components/VisitBtn";
-import React, { ReactNode, useEffect, useState } from "react";
-import StatsCard from "@/components/StatsCard";
-import { LuView } from "react-icons/lu";
-import { FaWpforms } from "react-icons/fa";
-import { HiCursorClick } from "react-icons/hi";
-import { TbArrowBounce } from "react-icons/tb";
-import { ElementsType, FormElementInstance } from "@/components/FormElements";
+'use client';
+import FormLinkShare from '@/components/FormLinkShare';
+import VisitBtn from '@/components/VisitBtn';
+import React, { ReactNode, useEffect, useState } from 'react';
+import StatsCard from '@/components/StatsCard';
+import { LuView } from 'react-icons/lu';
+import { FaWpforms } from 'react-icons/fa';
+import { HiCursorClick } from 'react-icons/hi';
+import { TbArrowBounce } from 'react-icons/tb';
+import { ElementsType, FormElementInstance } from '@/components/FormElements';
 import {
   Table,
   TableBody,
@@ -15,14 +15,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { format, formatDistance } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { FormSubmissions } from "@prisma/client";
-import { getForm, getFormWithSubmissions, getStats } from "@/app/services/form";
-import { Form } from "@/app/services/type";
+} from '@/components/ui/table';
+import { format, formatDistance } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { getForm, getFormWithSubmissions, getStats } from '@/app/services/form';
+import { Form, FormSubmissions } from '@/app/services/type';
 
 export default function FormDetailPage({
   params,
@@ -61,10 +60,10 @@ export default function FormDetailPage({
             if (fetchedStats) setStats(fetchedStats);
           } catch (error) {
             console.error('Error fetching stats:', error);
-            return
+            return;
           }
         } catch (error) {
-          console.error("Error fetching stats:", error);
+          console.error('Error fetching stats:', error);
         }
       }
     }
@@ -93,7 +92,7 @@ export default function FormDetailPage({
               title="Total visits"
               icon={<LuView className="text-blue-600" />}
               helperText="All time form visits"
-              value={stats.visits.toLocaleString() || ""}
+              value={stats.visits.toLocaleString() || ''}
               loading={false}
               className="shadow-md shadow-blue-600"
             />
@@ -102,7 +101,7 @@ export default function FormDetailPage({
               title="Total submissions"
               icon={<FaWpforms className="text-yellow-600" />}
               helperText="All time form submissions"
-              value={stats.submissions.toLocaleString() || ""}
+              value={stats.submissions.toLocaleString() || ''}
               loading={false}
               className="shadow-md shadow-yellow-600"
             />
@@ -111,7 +110,7 @@ export default function FormDetailPage({
               title="Submission rate"
               icon={<HiCursorClick className="text-green-600" />}
               helperText="Visits that result in form submission"
-              value={stats.submissionRate.toLocaleString() + "%" || ""}
+              value={stats.submissionRate.toLocaleString() + '%' || ''}
               loading={false}
               className="shadow-md shadow-green-600"
             />
@@ -120,17 +119,14 @@ export default function FormDetailPage({
               title="Bounce rate"
               icon={<TbArrowBounce className="text-red-600" />}
               helperText="Visits that leaves without interacting"
-              value={stats.bounceRate.toLocaleString() + "%" || ""}
+              value={stats.bounceRate.toLocaleString() + '%' || ''}
               loading={false}
               className="shadow-md shadow-red-600"
             />
           </div>
 
           <div className="container pt-10">
-            <SubmissionsTable
-              publicKey={publicKey.toString()}
-              id={form.id}
-            />
+            <SubmissionsTable publicKey={publicKey.toString()} id={form.id} />
           </div>
         </>
       )}
@@ -160,26 +156,25 @@ function SubmissionsTable({
   const [rows, setRows] = useState<Row[]>([]);
   useEffect(() => {
     async function fetchSubmissions() {
-      const { form, submissions } = await getFormWithSubmissions({
+      const fetchedFormWithSubmissions = await getFormWithSubmissions({
         id,
         ownerPubkey: publicKey,
       });
+      if (!fetchedFormWithSubmissions) throw new Error('form not found');
+      const { form, submissions } = fetchedFormWithSubmissions;
       setColumns([]);
       setRows([]);
-      if (!form) {
-        throw new Error("form not found");
-      }
 
       const formElements = JSON.parse(form.content) as FormElementInstance[];
 
       formElements.forEach((element) => {
         switch (element.type) {
-          case "TextField":
-          case "NumberField":
-          case "TextAreaField":
-          case "DateField":
-          case "SelectField":
-          case "CheckboxField":
+          case 'TextField':
+          case 'NumberField':
+          case 'TextAreaField':
+          case 'DateField':
+          case 'SelectField':
+          case 'CheckboxField':
             setColumns((prevColumns) => [
               ...prevColumns,
               {
@@ -269,4 +264,3 @@ function RowCell({ type, value }: { type: ElementsType; value: string }) {
 
   return <TableCell>{node}</TableCell>;
 }
-
