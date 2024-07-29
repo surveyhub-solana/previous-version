@@ -20,8 +20,8 @@ pub fn exec(ctx: Context<DeleteForm>) -> Result<()> {
     if form.owner != ctx.accounts.owner.key() {
         return Err(ErrorCode::Unauthorized.into());
     }
-    if form.remain_sol > 0.0 {
-        let amount_lamports = (ctx.accounts.form.remain_sol * 1_000_000_000.0) as u64;
+    if form.remain_sol > 0 {
+        let amount_lamports = ctx.accounts.form.remain_sol;
         // Kiểm tra số dư của system
         let system_balance = ctx.accounts.system.to_account_info().lamports();
         if system_balance < amount_lamports {

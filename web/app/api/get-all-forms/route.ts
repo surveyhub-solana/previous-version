@@ -1,6 +1,7 @@
 import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
+import { BN } from 'bn.js';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
@@ -21,11 +22,11 @@ export async function POST(req: Request) {
     const publishedForms = formAccounts
       .map((account) => account.account)
       .filter((form) => form.published);
-    console.log(publishedForms);
-    const validForms = publishedForms.filter(
-      (form) => form.remainSol >= form.solPerUser
-    );
-    console.log(validForms);
+    const validForms = publishedForms.filter((form) => {
+      const remainSol = Number(new BN(form.remainSol as number, 16));
+      const solPerUser = Number(new BN(form.solPerUser as number, 16));
+      return remainSol >= solPerUser && solPerUser > 0;
+    });
 
     if (validForms.length == 0) {
       return new Response(JSON.stringify('Form not found!'), {

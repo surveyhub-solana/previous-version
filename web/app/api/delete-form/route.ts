@@ -73,7 +73,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Error delete form:', error);
-
     if (error instanceof Error) {
       console.error('Error delete form:', error.message);
       return new Response(

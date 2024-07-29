@@ -8,10 +8,13 @@ export const formSchema = z.object({
 export type formSchemaType = z.infer<typeof formSchema>;
 
 export const updateFormSchema = z.object({
-  sumSOL: z.number().min(0, "sumSOL must be greater than or equal to 0"),
+  sumSOL: z
+    .number()
+    .min(1)
+    .positive('The total number of lamports must be greater than 0'),
   SOLPerUser: z
     .number()
-    .min(0, "SOLPerUser must be greater than or equal to 0"),
+    .min(1)
+    .positive('The number of lamports per respondent must be greater than 0'),
 });
-
 export type updateFormSchemaType = z.infer<typeof updateFormSchema>;

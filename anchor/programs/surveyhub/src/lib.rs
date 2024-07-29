@@ -24,7 +24,7 @@ pub mod solana_program {
         update_form_content::exec(ctx, _id, new_content)
     }
 
-    pub fn update_form_sol(ctx: Context<UpdateFormSOL>, sum_sol: f64, sol_per_user: f64) -> Result<()> {
+    pub fn update_form_sol(ctx: Context<UpdateFormSOL>, sum_sol: u64, sol_per_user: u64) -> Result<()> {
         update_form_sol::exec(ctx, sum_sol, sol_per_user)
     }
 

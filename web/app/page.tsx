@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import BN from 'bn.js';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense, useEffect, useState, useTransition } from 'react';
 import { LuView } from 'react-icons/lu';
@@ -76,7 +77,6 @@ function FormCard({ form }: { form: Form }) {
   const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000;
   const createdAtDate = new Date(createdAtTimestamp);
   const isValidDate = !isNaN(createdAtDate.getTime());
-  const [loading, startTransition] = useTransition();
   return (
     <Card>
       <CardHeader>
@@ -99,11 +99,13 @@ function FormCard({ form }: { form: Form }) {
             : 'Ngày không hợp lệ'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-[20px] truncate text-sm text-muted-foreground">
-        {form.description || 'No description'}
+      <CardContent className="h-[40px] truncate text-sm text-muted-foreground">
+        <div>{form.description}</div>
+        <div className="text-sm font-medium text-muted-foreground">
+          Lamports per respondent: {new BN(form.solPerUser, 16).toString()}
+        </div>
       </CardContent>
       <CardFooter>
-        {' '}
         <Button asChild className="w-full mt-2 text-md gap-4">
           <Link href={`/submit/${form.id}`}>Fill Out Form</Link>
         </Button>

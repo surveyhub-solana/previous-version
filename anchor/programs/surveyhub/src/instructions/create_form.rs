@@ -25,9 +25,9 @@ pub fn exec(ctx: Context<CreateForm>, id: String, name: String, description: Str
     form.content = "[]".to_string();
     form.visits = 0;
     form.submissions = 0;
-    form.sum_sol = 0.0;
-    form.remain_sol = 0.0;
-    form.sol_per_user = 0.0;
+    form.sum_sol = 0;
+    form.remain_sol = 0;
+    form.sol_per_user = 0;
     form.published = false;
 
     Ok(())

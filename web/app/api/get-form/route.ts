@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       .filter((form) => form.published);
     console.log(publishedForms);
     const validForms = publishedForms.filter(
-      (form) => form.remainSol > form.solPerUser
+      (form) => form.remainSol >= form.solPerUser
     );
     if (validForms.length == 0) {
       return new Response(JSON.stringify('Form not found!'), {

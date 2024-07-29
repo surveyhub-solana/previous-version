@@ -1,7 +1,4 @@
-import {
-  Connection,
-  LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 
 

@@ -47,7 +47,7 @@ export async function POST(req: Request) {
 
     const tx = new Transaction();
     const updateFormSOLInstruction = await program.methods
-      .updateFormSol(sum_sol, sol_per_user)
+      .updateFormSol(new anchor.BN(sum_sol), new anchor.BN(sol_per_user))
       .accounts({
         form: formAccount,
         owner: ownerPublicKey,

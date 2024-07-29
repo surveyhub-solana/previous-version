@@ -40,8 +40,8 @@ export const IDL: Idl = {
         { name: 'systemProgram', isMut: false, isSigner: false },
       ],
       args: [
-        { name: 'sumSol', type: 'f64' },
-        { name: 'solPerUser', type: 'f64' },
+        { name: 'sumSol', type: 'u64' },
+        { name: 'solPerUser', type: 'u64' },
       ],
     },
     {
@@ -116,9 +116,9 @@ export const IDL: Idl = {
           { name: 'content', type: 'string' },
           { name: 'visits', type: 'u32' },
           { name: 'submissions', type: 'u32' },
-          { name: 'sumSol', type: 'f64' },
-          { name: 'remainSol', type: 'f64' },
-          { name: 'solPerUser', type: 'f64' },
+          { name: 'sumSol', type: 'u64' },
+          { name: 'remainSol', type: 'u64' },
+          { name: 'solPerUser', type: 'u64' },
           { name: 'published', type: 'bool' },
         ],
       },

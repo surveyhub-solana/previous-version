@@ -28,7 +28,7 @@ pub struct SubmitForm<'info> {
 
     ctx.accounts.form.submissions += 1;
     // Chuyển đổi từ SOL sang lamports
-    let amount_lamports = (ctx.accounts.form.sol_per_user * 1_000_000_000.0) as u64;
+    let amount_lamports = ctx.accounts.form.sol_per_user;
     // Kiểm tra số dư của system
     let system_balance = ctx.accounts.system.to_account_info().lamports();
     if system_balance < amount_lamports || ctx.accounts.form.remain_sol < ctx.accounts.form.sol_per_user {

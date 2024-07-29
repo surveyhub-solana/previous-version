@@ -17,7 +17,14 @@ import {
 import { Button } from './ui/button';
 import { toast } from './ui/use-toast';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from './ui/form';
 import { Input } from './ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -32,8 +39,8 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
   const form = useForm<updateFormSchemaType>({
     resolver: zodResolver(updateFormSchema),
     defaultValues: {
-      sumSOL: 0,
-      SOLPerUser: 0,
+      sumSOL: 1,
+      SOLPerUser: 1,
     },
   });
 
@@ -74,6 +81,22 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 title: 'Success',
                 description: 'Form updated successfully',
               });
+              const formId = await publishForm({
+                id,
+                ownerPubkey: publicKey.toString(),
+              });
+              if (formId && formId == id) {
+                toast({
+                  title: 'Success',
+                  description: 'Your form is now available to the public',
+                });
+                window.location.href = `/dashboard/builder/${id}`;
+              } else {
+                toast({
+                  title: 'Error',
+                  description: 'Errors when publishing forms',
+                });
+              }
             } else {
               console.error('Wallet does not support signing transactions');
               toast({
@@ -91,23 +114,6 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
           }
         }
 
-        const formId = await publishForm({
-          id,
-          ownerPubkey: publicKey.toString(),
-        });
-        if (formId && formId == id) {
-          toast({
-            title: 'Success',
-            description: 'Your form is now available to the public',
-          });
-          window.location.href = `/dashboard/builder/${id}`;
-        }
-        else {
-          toast({
-            title: 'Error',
-            description: 'Errors when publishing forms',
-          });
-        }
       } else {
         toast({
           title: 'Error',
@@ -153,15 +159,17 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 name="sumSOL"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>
+                      The total number of lamports used for this form is:
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="any"
-                        placeholder="SUM SOL"
                         {...field}
-                        value={field.value ?? 0}
+                        value={field.value ?? 1}
                         onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value))
+                          field.onChange(parseInt(e.target.value))
                         }
                       />
                     </FormControl>
@@ -174,15 +182,17 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 name="SOLPerUser"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>
+                      The number of lamports each respondent receives is:
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="any"
-                        placeholder="SOL per user"
                         {...field}
-                        value={field.value ?? 0}
+                        value={field.value ?? 1}
                         onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value))
+                          field.onChange(parseInt(e.target.value))
                         }
                       />
                     </FormControl>

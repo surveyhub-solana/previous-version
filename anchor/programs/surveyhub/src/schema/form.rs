@@ -11,9 +11,9 @@ pub struct Form {
     pub content: String, // 4 + len()
     pub visits: u32, // 4
     pub submissions: u32, // 4
-    pub sum_sol: f64, // 8
-    pub remain_sol: f64, //8
-    pub sol_per_user: f64, // 8
+    pub sum_sol: u64, // 8
+    pub remain_sol: u64, //8
+    pub sol_per_user: u64, // 8
     pub published: bool // 1
 }
 impl Form {

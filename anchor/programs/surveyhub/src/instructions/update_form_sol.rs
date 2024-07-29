@@ -15,7 +15,7 @@ pub struct UpdateFormSOL<'info> {
     pub system_program: Program<'info, System>,
 
 }
-pub fn exec(ctx: Context<UpdateFormSOL>, sum_sol: f64, sol_per_user: f64) -> Result<()> {
+pub fn exec(ctx: Context<UpdateFormSOL>, sum_sol: u64, sol_per_user: u64) -> Result<()> {
     let form = &mut ctx.accounts.form;
 
     // Kiểm tra quyền sở hữu form
@@ -24,7 +24,7 @@ pub fn exec(ctx: Context<UpdateFormSOL>, sum_sol: f64, sol_per_user: f64) -> Res
     }
 
     // Chuyển đổi từ SOL sang lamports
-    let amount_lamports = (sum_sol * 1_000_000_000.0) as u64;
+    let amount_lamports = sum_sol;
     // Kiểm tra số dư của owner
     let owner_balance = ctx.accounts.owner.to_account_info().lamports();
     if owner_balance < amount_lamports {

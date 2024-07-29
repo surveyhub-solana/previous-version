@@ -36,7 +36,7 @@ export default function Home() {
       <Separator className="my-6" />
       <h2 className="text-4xl font-bold col-span-2">Your forms</h2>
       <Separator className="my-6" />
-      <div className="grid gric-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <CreateFormBtn />
         <Suspense
           fallback={
@@ -265,7 +265,7 @@ function FormCard({ form }: { form: Form }) {
         {form.published && (
           <Button asChild className="w-full mt-2 text-md gap-4">
             <Link href={`dashboard/forms/${form.id}`}>
-              View results <BiRightArrowAlt />
+              View submissions <BiRightArrowAlt />
             </Link>
           </Button>
         )}
@@ -284,9 +284,8 @@ function FormCard({ form }: { form: Form }) {
           <Button
             onClick={() => startTransition(handleDeleteForm)}
             variant={'destructive'}
-            className="w-full mt-2 text-md gap-4"
+            className="w-fit mt-2 text-md gap-4"
           >
-            Delete form
             {!loading && <FaTrash />}
             {loading && <FaSpinner className="animate-spin" />}
           </Button>
