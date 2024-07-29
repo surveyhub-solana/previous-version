@@ -21,9 +21,12 @@ export async function POST(req: Request) {
     const publishedForms = formAccounts
       .map((account) => account.account)
       .filter((form) => form.published);
+    console.log(publishedForms);
     const validForms = publishedForms.filter(
-      (form) => form.remain_sol > form.sol_per_user
+      (form) => form.remainSol >= form.solPerUser
     );
+    console.log(validForms);
+
     if (validForms.length == 0) {
       return new Response(JSON.stringify('Form not found!'), {
         headers: {
