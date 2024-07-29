@@ -1,10 +1,11 @@
+import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
-import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 import { PublicKey } from '@solana/web3.js';
+import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 
-type FormSubmissionsAccount = IdlAccounts<typeof IDL>['formSubmissions']; // Đảm bảo tên đúng với IDL của bạn
+type FormAccount = IdlAccounts<typeof IDL>['form'];
 
 export async function POST(req: Request) {
   try {
@@ -31,38 +32,22 @@ export async function POST(req: Request) {
         status: 400,
       });
     }
-
     const program = await getProgram();
     const ownerPublicKey = new PublicKey(ownerPubkey);
-    // Lấy formAccount public key từ seeds
     const [formAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from(id), ownerPublicKey.toBuffer()],
       PROGRAM_ADDRESS
     );
-    const formAccountInfo = await program.account.form.fetch(formAccount);
 
-    const formSubmissionsAccounts: ProgramAccount<FormSubmissionsAccount>[] =
-      await program.account.formSubmissions.all([
-        {
-          memcmp: {
-            offset: 8 + 4 + 32, // Tính toán offset dựa trên các trường trước trường owner
-            bytes: formAccount.toBase58(),
-          },
-        },
-      ]);
+    // Fetch form account data
+    const form = await program.account.form.fetch(formAccount);
 
-    const submissions = formSubmissionsAccounts.map(
-      (account) => account.account
-    );
-    return new Response(
-      JSON.stringify({ form: formAccountInfo, submissions: submissions }),
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify(form), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      status: 200,
+    });
   } catch (error) {
     console.error('Error form:', error);
 

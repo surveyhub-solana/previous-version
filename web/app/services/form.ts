@@ -54,8 +54,8 @@ export const getAllForms = async () => {
       throw new Error(data.error || 'Something went wrong');
     }
   } catch (error) {
-    if (error instanceof Error) return error.message;
-    return String(error);
+    console.log(String(error));
+    return null;
   }
 };
 
@@ -132,6 +132,39 @@ export const getStats = async (publicKey: string) => {
     return null;
   }
 };
+export const getFormByOwner = async ({
+  id,
+  ownerPubkey,
+}: {
+  id: string;
+  ownerPubkey: string;
+}) => {
+  try {
+    const response = await fetch('/api/get-form-by-owner', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
+        ownerPubkey,
+      }),
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      return data as Form;
+    } else {
+      // Trả về thông tin chi tiết lỗi từ server nếu có
+      throw new Error(data.error || 'Something went wrong');
+    }
+  } catch (error) {
+    if (error instanceof Error) console.log(error.message);
+    else console.log(String(error));
+    return null;
+  }
+};
+
 export const getForm = async (id: string) => {
   try {
     const response = await fetch('/api/get-form', {
@@ -307,6 +340,33 @@ export const submitForm = async ({
       tx: tx,
       id: data.id,
     };
+  }
+  console.error('Error:', data.message);
+  return null;
+};
+export const deleteForm = async ({
+  id,
+  ownerPubkey,
+}: {
+  id: string;
+  ownerPubkey: string;
+}) => {
+  const response = await fetch('/api/delete-form', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id,
+      ownerPubkey,
+    }),
+  });
+  const data = await response.json();
+  if (response.ok) {
+    const base64Tx = data.transaction;
+    const txBuffer = Buffer.from(base64Tx, 'base64');
+    const tx = Transaction.from(txBuffer);
+    return tx;
   }
   console.error('Error:', data.message);
   return null;

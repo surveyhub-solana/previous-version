@@ -1,6 +1,8 @@
+import * as anchor from '@project-serum/anchor';
 import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
+import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
@@ -10,6 +12,7 @@ export async function POST(req: Request) {
     const id = await req.json();
     const program = await getProgram();
     const idBytes = Buffer.from(id);
+    const systemKeypair = getKeypairFromEnvironment('SOLANA_SECRET_KEY');
     const formAccounts: ProgramAccount<FormAccount>[] =
       await program.account.form.all([
         {
@@ -19,9 +22,31 @@ export async function POST(req: Request) {
           },
         },
       ]);
-
-    const forms = formAccounts.map((account) => account.account);
-    return new Response(JSON.stringify(forms[0]), {
+    await program.methods
+      .visitForm()
+      .accounts({
+        form: formAccounts[0].publicKey,
+        system: systemKeypair.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([systemKeypair])
+      .rpc();
+    const publishedForms = formAccounts
+      .map((account) => account.account)
+      .filter((form) => form.published);
+    console.log(publishedForms);
+    const validForms = publishedForms.filter(
+      (form) => form.remainSol > form.solPerUser
+    );
+    if (validForms.length == 0) {
+      return new Response(JSON.stringify('Form not found!'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 400,
+      });
+    }
+    return new Response(JSON.stringify(validForms[0]), {
       headers: {
         'Content-Type': 'application/json',
       },

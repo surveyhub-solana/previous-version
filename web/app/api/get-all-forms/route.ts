@@ -12,13 +12,27 @@ export async function POST(req: Request) {
         {
           memcmp: {
             offset: 8 + 4 + 32, // Tính toán offset dựa trên các trường trước trường owner
-            bytes: (process.env.SOLANA_PUBLIC_KEY as string),
+            bytes: process.env.SOLANA_PUBLIC_KEY as string,
           },
         },
       ]);
 
-    const forms = formAccounts.map((account) => account.account);
-    return new Response(JSON.stringify(forms), {
+    // Lọc các form mà có publish = true
+    const publishedForms = formAccounts
+      .map((account) => account.account)
+      .filter((form) => form.published);
+    const validForms = publishedForms.filter(
+      (form) => form.remain_sol > form.sol_per_user
+    );
+    if (validForms.length == 0) {
+      return new Response(JSON.stringify('Form not found!'), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 400,
+      });
+    }
+    return new Response(JSON.stringify(validForms), {
       headers: {
         'Content-Type': 'application/json',
       },

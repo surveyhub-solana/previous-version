@@ -20,7 +20,11 @@ import { format, formatDistance } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { getForm, getFormWithSubmissions, getStats } from '@/app/services/form';
+import {
+  getFormByOwner,
+  getFormWithSubmissions,
+  getStats,
+} from '@/app/services/form';
 import { Form, FormSubmissions } from '@/app/services/type';
 
 export default function FormDetailPage({
@@ -46,7 +50,10 @@ export default function FormDetailPage({
       } else {
         try {
           try {
-            const fetchedForm: Form | null = await getForm(id);
+            const fetchedForm: Form | null = await getFormByOwner({
+              id: id,
+              ownerPubkey: publicKey.toString(),
+            });
             if (!fetchedForm) {
               throw new Error('form not found');
             }
@@ -196,7 +203,7 @@ function SubmissionsTable({
           ...prevRows,
           {
             ...content,
-            submittedAt: submission.createdAt,
+            submittedAt: parseInt(submission.createdAt, 16) * 1000,
           },
         ]);
       });

@@ -1,9 +1,9 @@
-"use client";
-import FormBuilder from "@/components/FormBuilder";
-import React, { useEffect, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Form } from "@/app/services/type";
-import { getForm } from "@/app/services/form";
+'use client';
+import FormBuilder from '@/components/FormBuilder';
+import React, { useEffect, useState } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { Form } from '@/app/services/type';
+import { getFormByOwner } from '@/app/services/form';
 
 export default function BuilderPage({
   params,
@@ -22,14 +22,17 @@ export default function BuilderPage({
         return;
       } else {
         try {
-          const fetchedForm: Form | null = await getForm(id);
+          const fetchedForm: Form | null = await getFormByOwner({
+            id: id,
+            ownerPubkey: publicKey.toString(),
+          });
           if (!fetchedForm) {
-            throw new Error("form not found");
+            throw new Error('form not found');
           }
           setForm(fetchedForm);
         } catch (error) {
-          console.error("Error fetching stats:", error);
-          return
+          console.error('Error fetching stats:', error);
+          return;
         }
       }
     }

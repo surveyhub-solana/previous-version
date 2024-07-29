@@ -8,14 +8,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useTransition } from 'react';
 import { LuView } from 'react-icons/lu';
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit, FaSpinner, FaTrash } from 'react-icons/fa';
 import { FaWpforms } from 'react-icons/fa';
 import { HiCursorClick } from 'react-icons/hi';
 import { TbArrowBounce } from 'react-icons/tb';
 import { BiRightArrowAlt } from 'react-icons/bi';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Separator } from '@/components/ui/separator';
 import CreateFormBtn from '@/components/CreateFormBtn';
 import { Badge } from '@/components/ui/badge';
@@ -23,8 +23,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import StatsCard from '@/components/StatsCard';
-import { getOwnForms, getStats } from '../services/form';
+import { getOwnForms, getStats, deleteForm } from '../services/form';
 import { Form } from '../services/type';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Home() {
   return (
@@ -176,6 +177,63 @@ function FormCard({ form }: { form: Form }) {
   const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000;
   const createdAtDate = new Date(createdAtTimestamp);
   const isValidDate = !isNaN(createdAtDate.getTime());
+  const [loading, startTransition] = useTransition();
+  const { connection } = useConnection();
+  const { publicKey } = useWallet();
+  const wallet = useWallet();
+  const handleDeleteForm = async () => {
+    try {
+      if (!publicKey || !wallet) {
+        toast({
+          title: 'Error',
+          description: 'You are not logged in to the wallet',
+        });
+        return;
+      }
+      const tx = await deleteForm({
+        id: form.id,
+        ownerPubkey: publicKey?.toString(),
+      });
+      if (tx) {
+        // Ký giao dịch bằng ví của người dùng (ở phía client)
+        if (wallet.signTransaction) {
+          // Ký giao dịch bằng ví của người dùng (ở phía client)
+          const signedTx = await wallet.signTransaction(tx);
+
+          // Phát sóng giao dịch lên mạng Solana
+          const txId = await connection.sendRawTransaction(
+            signedTx.serialize()
+          );
+          console.log('Transaction ID:', txId);
+          toast({
+            title: 'Success',
+            description: 'Form deleted successfully',
+          });
+          window.location.href = `/dashboard`;
+        } else {
+          console.error('Wallet does not support signing transactions');
+          toast({
+            title: 'Error',
+            description: 'Wallet does not support signing transactions',
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Error initiating a transaction from the server',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error during form submission:', error);
+      toast({
+        title: 'Error',
+        description: 'Something went wrong, please try again later',
+        variant: 'destructive',
+      });
+    }
+  };
   return (
     <Card>
       <CardHeader>
@@ -207,7 +265,7 @@ function FormCard({ form }: { form: Form }) {
         {form.published && (
           <Button asChild className="w-full mt-2 text-md gap-4">
             <Link href={`dashboard/forms/${form.id}`}>
-              View submissions <BiRightArrowAlt />
+              View results <BiRightArrowAlt />
             </Link>
           </Button>
         )}
@@ -222,6 +280,17 @@ function FormCard({ form }: { form: Form }) {
             </Link>
           </Button>
         )}
+        {
+          <Button
+            onClick={() => startTransition(handleDeleteForm)}
+            variant={'destructive'}
+            className="w-full mt-2 text-md gap-4"
+          >
+            Delete form
+            {!loading && <FaTrash />}
+            {loading && <FaSpinner className="animate-spin" />}
+          </Button>
+        }
       </CardFooter>
     </Card>
   );
