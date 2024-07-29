@@ -4,6 +4,7 @@ import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
+import { BN } from 'bn.js';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
