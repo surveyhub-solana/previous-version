@@ -209,7 +209,6 @@ function FormCard({ form }: { form: Form }) {
             title: 'Success',
             description: 'Form deleted successfully',
           });
-          window.location.href = `/dashboard`;
         } else {
           console.error('Wallet does not support signing transactions');
           toast({
