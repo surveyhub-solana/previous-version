@@ -6,6 +6,8 @@ import { getAuthorBalance } from '@/lib/solana';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import { MdDashboardCustomize } from 'react-icons/md';
+import { FaCartArrowDown } from 'react-icons/fa';
 
 export default function NavBar() {
   const [isClient, setIsClient] = useState(false);
@@ -32,11 +34,20 @@ export default function NavBar() {
         {isClient && <WalletMultiButton style={{}} />}
         <Button
           asChild
-          className="w-fit h-auto rounded-[5px] text-md ms-2 px-6"
+          className="w-fit h-auto rounded-[5px] text-xl ms-2 px-6"
           variant={'secondary'}
         >
           <Link href={`/dashboard`} className="w-fit">
-            Dashboard
+            <MdDashboardCustomize />
+          </Link>
+        </Button>
+        <Button
+          asChild
+          className="w-fit h-auto rounded-[5px] text-xl ms-2 px-6"
+          variant={'secondary'}
+        >
+          <Link href={`/marketplace`} className="w-fit">
+            <FaCartArrowDown />
           </Link>
         </Button>
       </div>
