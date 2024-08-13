@@ -169,7 +169,8 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      The total number of SOL used for this form is:
+                      The total number of Token used for this form is (SOL is
+                      default):
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -190,7 +191,8 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      The number of SOL each respondent receives is:
+                      The number of Token each respondent receives is (SOL is
+                      default):
                     </FormLabel>
                     <FormControl>
                       <Input

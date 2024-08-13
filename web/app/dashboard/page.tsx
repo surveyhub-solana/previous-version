@@ -257,8 +257,12 @@ function FormCard({ form }: { form: Form }) {
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-[20px] truncate text-sm text-muted-foreground">
-        {form.description || 'No description'}
+      <CardContent className="h-fit truncate text-sm text-muted-foreground">
+        <div className="h-fit whitespace-pre-wrap break-words">
+          {form.description.split('\n').map((line, index) => (
+            <div key={index}>{line}</div>
+          ))}
+        </div>
       </CardContent>
       <CardFooter>
         {form.published && (

@@ -98,10 +98,27 @@ function FormCard({ form }: { form: Form }) {
             : 'Ngày không hợp lệ'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-[40px] truncate text-sm text-muted-foreground">
-        <div>{form.description}</div>
+      <CardContent className="h-fit truncate text-sm text-muted-foreground">
+        <div className="h-fit whitespace-pre-wrap break-words">
+          {form.description.split('\n').map((line, index) => (
+            <div key={index}>{line}</div>
+          ))}
+        </div>
+        <div className="text-sm font-medium text-muted-foreground pt-4">
+          Token:{' '}
+          {form.mint ? (
+            <Link
+              href={`https://explorer.solana.com/address/${form.mint.toString()}?cluster=devnet`}
+              className="underline"
+            >
+              {form.mint.toString()}
+            </Link>
+          ) : (
+            'SOL'
+          )}
+        </div>
         <div className="text-sm font-medium text-muted-foreground">
-          Lamports per respondent: {new BN(form.solPerUser, 16).toString()}
+          Amount per respondent: {new BN(form.solPerUser, 16).toString()}
         </div>
       </CardContent>
       <CardFooter>
