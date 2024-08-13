@@ -4,6 +4,19 @@ import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 import { utils, web3 } from '@project-serum/anchor';
+
+export async function detectTokenProgram(tokenAddress: string) {
+  const provider = await getProvider();
+  const accountInfo = await provider.connection.getAccountInfo(
+    new PublicKey(tokenAddress)
+  );
+  if (!accountInfo || !accountInfo.owner) {
+    throw new Error('Invalid token address');
+  }
+
+  return accountInfo.owner.toString(); // Trả về chương trình sở hữu token
+}
+
 export async function POST(req: Request) {
   try {
     const {
@@ -19,6 +32,8 @@ export async function POST(req: Request) {
       token_address: string;
       ownerPubkey: string;
     } = await req.json();
+
+    // Kiểm tra các trường bắt buộc
     if (!id || !sum_sol || !sol_per_user) {
       return new Response(
         JSON.stringify('Id, sum SOL and SOL per user are required!'),
@@ -30,6 +45,7 @@ export async function POST(req: Request) {
         }
       );
     }
+
     if (!ownerPubkey) {
       return new Response(JSON.stringify("Let's connect to your wallet"), {
         headers: {
@@ -38,6 +54,7 @@ export async function POST(req: Request) {
         status: 400,
       });
     }
+
     const ownerPublicKey = new PublicKey(ownerPubkey);
     const systemKeypair = getKeypairFromEnvironment('SOLANA_SECRET_KEY');
     const program = await getProgram();
@@ -53,8 +70,24 @@ export async function POST(req: Request) {
     let updateFormSOLInstruction;
 
     if (token_address && token_address !== '') {
+      const detectedProgram = await detectTokenProgram(token_address);
+      if (detectedProgram !== anchor.utils.token.TOKEN_PROGRAM_ID.toString()) {
+        return new Response(
+          JSON.stringify({
+            message:
+              'Only SPL Tokens from the standard token program are accepted.',
+            error: `Invalid token program: ${detectedProgram}`,
+          }),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            status: 400,
+          }
+        );
+      }
+
       const mint = new PublicKey(token_address);
-      // Tạo các tài khoản token tương ứng
       const systemTokenAccount = await utils.token.associatedAddress({
         mint: mint,
         owner: systemKeypair.publicKey,
@@ -64,9 +97,7 @@ export async function POST(req: Request) {
         mint: mint,
         owner: ownerPublicKey,
       });
-      console.log(token_address);
-      console.log(ownerTokenAccount);
-      console.log(Math.floor(sol_per_user));
+
       updateFormSOLInstruction = await program.methods
         .updateFormToken(
           new anchor.BN(Math.floor(sum_sol)),
@@ -85,10 +116,8 @@ export async function POST(req: Request) {
           rent: web3.SYSVAR_RENT_PUBKEY,
         })
         .instruction();
-      console.log(updateFormSOLInstruction);
     } else {
       console.log('Khối else');
-      // Nếu không có `token_address`, chỉ sử dụng SOL
       updateFormSOLInstruction = await program.methods
         .updateFormSol(new anchor.BN(sum_sol), new anchor.BN(sol_per_user))
         .accounts({
@@ -100,6 +129,7 @@ export async function POST(req: Request) {
         .instruction();
       console.log('Token Address: ', token_address);
     }
+
     tx.add(updateFormSOLInstruction);
 
     // Set feePayer to system's public key
@@ -124,7 +154,6 @@ export async function POST(req: Request) {
     console.error('Error updating form:', error);
 
     if (error instanceof Error) {
-      console.error('Error updating form:', error.message);
       return new Response(
         JSON.stringify({
           message: 'Internal server error',
@@ -138,7 +167,7 @@ export async function POST(req: Request) {
         }
       );
     }
-    console.error('Unknown error updating form:', error);
+
     return new Response(
       JSON.stringify({
         message: 'Internal server error',
