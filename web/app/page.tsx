@@ -77,7 +77,7 @@ function FormCard({ form }: { form: Form }) {
   const createdAtDate = new Date(createdAtTimestamp);
   const isValidDate = !isNaN(createdAtDate.getTime());
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 justify-between">
           <span className="truncate font-bold">{form.name}</span>
@@ -98,7 +98,7 @@ function FormCard({ form }: { form: Form }) {
             : 'Ngày không hợp lệ'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-fit truncate text-sm text-muted-foreground">
+      <CardContent className="flex-1 truncate text-sm text-muted-foreground">
         <div className="h-fit whitespace-pre-wrap break-words">
           {form.description.split('\n').map((line, index) => (
             <div key={index}>{line}</div>
@@ -121,7 +121,7 @@ function FormCard({ form }: { form: Form }) {
           Amount per respondent: {new BN(form.solPerUser, 16).toString()}
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="mt-auto">
         <Button asChild className="w-full mt-2 text-md gap-4">
           <Link href={`/submit/${form.id}`}>Fill Out Form</Link>
         </Button>
