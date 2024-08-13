@@ -5,7 +5,7 @@ import { getProgram, getProvider } from '@/config/anchor/index';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 import { utils, web3 } from '@project-serum/anchor';
 
-export async function detectTokenProgram(tokenAddress: string) {
+async function detectTokenProgram(tokenAddress: string) {
   const provider = await getProvider();
   const accountInfo = await provider.connection.getAccountInfo(
     new PublicKey(tokenAddress)

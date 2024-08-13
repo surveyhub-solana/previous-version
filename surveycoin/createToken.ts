@@ -10,9 +10,11 @@ import {
   mplTokenMetadata,
 } from '@metaplex-foundation/mpl-token-metadata';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import secret from './token-admin.json';
+import secret from './token-admin.json'
 const umi = createUmi('https://api.devnet.solana.com/'); //Replace with your QuickNode RPC Endpoint
-const userWallet = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(secret));
+const userWallet = umi.eddsa.createKeypairFromSecretKey(
+  new Uint8Array(secret)
+);
 const userWalletSigner = createSignerFromKeypair(umi, userWallet);
 const metadata = {
   name: 'SurveyCoin',
@@ -32,7 +34,7 @@ createAndMint(umi, {
   uri: metadata.uri,
   sellerFeeBasisPoints: percentAmount(0),
   decimals: 9,
-  amount: 2004,
+  amount: 2004 * 1_000_000_000,
   tokenOwner: userWallet.publicKey,
   tokenStandard: TokenStandard.Fungible,
 })
