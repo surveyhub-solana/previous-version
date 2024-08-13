@@ -3,6 +3,7 @@ import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
+import { utils, web3 } from '@project-serum/anchor';
 export async function POST(req: Request) {
   try {
     const {
@@ -40,19 +41,53 @@ export async function POST(req: Request) {
       PROGRAM_ADDRESS
     );
 
-    // Gửi giao dịch lên mạng Solana
-    const tx = new Transaction();
-    const submitFormInstruction = await program.methods
-      .deleteForm()
-      .accounts({
-        form: formAccount,
-        owner: ownerPublicKey,
-        system: systemKeypair.publicKey,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .instruction();
+    // Lấy thông tin form để kiểm tra mint (token_address)
+    const formAccountInfo = await program.account.form.fetch(formAccount);
+    const mint = formAccountInfo.mint as PublicKey | null;
 
-    tx.add(submitFormInstruction);
+    const tx = new Transaction();
+    let deleteFormInstruction;
+
+    if (mint) {
+      // Trường hợp có token_address (mint)
+      const systemTokenAccount = await utils.token.associatedAddress({
+        mint: mint,
+        owner: systemKeypair.publicKey,
+      });
+
+      const ownerTokenAccount = await utils.token.associatedAddress({
+        mint: mint,
+        owner: ownerPublicKey,
+      });
+
+      deleteFormInstruction = await program.methods
+        .deleteFormToken()
+        .accounts({
+          form: formAccount,
+          owner: ownerPublicKey,
+          system: systemKeypair.publicKey,
+          systemTokenAccount: systemTokenAccount,
+          ownerTokenAccount: ownerTokenAccount,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+          associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
+          rent: web3.SYSVAR_RENT_PUBKEY,
+        })
+        .instruction();
+    } else {
+      // Trường hợp không có token_address (mint)
+      deleteFormInstruction = await program.methods
+        .deleteForm()
+        .accounts({
+          form: formAccount,
+          owner: ownerPublicKey,
+          system: systemKeypair.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .instruction();
+    }
+
+    tx.add(deleteFormInstruction);
     // Set feePayer to authorPublicKey
     tx.feePayer = systemKeypair.publicKey;
     const recentBlockhash = await provider.connection.getRecentBlockhash();

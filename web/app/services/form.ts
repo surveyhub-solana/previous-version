@@ -83,7 +83,7 @@ export const getOwnForms = async (publicKey: string) => {
     return null;
   }
 };
-export const getStats = async (publicKey: string) => {
+export const getStats = async (publicKey: string, id = '') => {
   try {
     const response = await fetch('/api/get-own-forms', {
       method: 'POST',
@@ -97,11 +97,14 @@ export const getStats = async (publicKey: string) => {
 
     if (response.ok) {
       const visits = data.reduce(
-        (total: number, form: Form) => total + form.visits,
+        (total: number, form: Form) =>
+          total + ((id.length > 0 ? form.id === id : true) ? form.visits : 0),
         0
       );
       const submissions = data.reduce(
-        (total: number, form: Form) => total + form.submissions,
+        (total: number, form: Form) =>
+          total +
+          ((id.length > 0 ? form.id === id : true) ? form.submissions : 0),
         0
       );
       const submissionRate = visits !== 0 ? (submissions * 100) / visits : 0;
@@ -227,11 +230,13 @@ export const updateFormSOL = async ({
   id,
   sum_sol,
   sol_per_user,
+  token_address,
   ownerPubkey,
 }: {
   id: string;
   sum_sol: number;
   sol_per_user: number;
+  token_address: string;
   ownerPubkey: string;
 }) => {
   const response = await fetch('/api/update-form-sol', {
@@ -243,6 +248,7 @@ export const updateFormSOL = async ({
       id,
       sum_sol,
       sol_per_user,
+      token_address,
       ownerPubkey,
     }),
   });

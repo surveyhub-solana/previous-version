@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 #[instruction(id: String, name: String, description: String)]
 pub struct CreateForm<'info> {
     #[account(init, seeds = [id.as_bytes(), owner.key().as_ref()],
-        bump, payer = system, space = 8 + 4 + id.len() + 32 + 32 + 4 + name.len() + 4 + description.len() + 8 + 4 + 2 + 4 + 4 + 8 + 8 + 8 + 1)]
+        bump, payer = system, space = 8 + 4 + id.len() + 32 + 32 + 4 + name.len() + 4 + description.len() + 8 + 4 + 2 + 4 + 4 + 8 + 8 + 8 + 1 + 1 + 32)]
     pub form: Account<'info, Form>,
     #[account(mut)]
     pub owner: Signer<'info>,
@@ -25,9 +25,9 @@ pub fn exec(ctx: Context<CreateForm>, id: String, name: String, description: Str
     form.content = "[]".to_string();
     form.visits = 0;
     form.submissions = 0;
-    form.sum_sol = 0;
-    form.remain_sol = 0;
-    form.sol_per_user = 0;
+    form.sum_sol = 0.0;
+    form.remain_sol = 0.0;
+    form.sol_per_user = 0.0;
     form.published = false;
 
     Ok(())

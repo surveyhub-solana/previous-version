@@ -50,3 +50,5 @@ test-ledger
 # local env files
 .env*.local
 .env
+token-admin.json
+token-keypair.json

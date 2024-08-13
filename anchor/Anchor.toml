@@ -5,7 +5,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-surveyhub = "8XEbkhydCyZSPqvsfRmE2s4p1YbBQeMabY8DXu92B54E"
+surveyhub = "Dzz1hUHAkAFuMSm7qqmSPic4ucVpXNZjoov1WvFRmCCL"
 
 [registry]
 url = "https://api.apr.dev"

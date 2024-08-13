@@ -1,6 +1,7 @@
 import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
+import { PublicKey } from '@solana/web3.js';
 import { BN } from 'bn.js';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
@@ -8,12 +9,14 @@ type FormAccount = IdlAccounts<typeof IDL>['form'];
 export async function POST(req: Request) {
   try {
     const program = await getProgram();
+    const systemPublicKey = new PublicKey(process.env.SOLANA_PUBLIC_KEY || '');
+    console.log(systemPublicKey);
     const formAccounts: ProgramAccount<FormAccount>[] =
       await program.account.form.all([
         {
           memcmp: {
             offset: 8 + 4 + 32, // Tính toán offset dựa trên các trường trước trường owner
-            bytes: process.env.SOLANA_PUBLIC_KEY as string,
+            bytes: systemPublicKey.toBase58(),
           },
         },
       ]);
@@ -22,6 +25,7 @@ export async function POST(req: Request) {
     const publishedForms = formAccounts
       .map((account) => account.account)
       .filter((form) => form.published);
+    console.log(publishedForms);
     const validForms = publishedForms.filter((form) => {
       const remainSol = Number(new BN(form.remainSol as number, 16));
       const solPerUser = Number(new BN(form.solPerUser as number, 16));

@@ -14,6 +14,7 @@ export type Form = {
   remainSol: number; // f64 in Rust, number in TS
   solPerUser: number; // f64 in Rust, number in TS
   published: boolean; // 1
+  mint?: PublicKey;
 };
 
 export type FormSubmissions = {

@@ -20,15 +20,16 @@ pub fn exec(ctx: Context<DeleteForm>) -> Result<()> {
     if form.owner != ctx.accounts.owner.key() {
         return Err(ErrorCode::Unauthorized.into());
     }
-    if form.remain_sol > 0 {
-        let amount_lamports = ctx.accounts.form.remain_sol;
-        // Kiểm tra số dư của system
+
+    if form.remain_sol > 0.0 {
+        // Trường hợp sử dụng SOL
+        let amount_lamports = (form.remain_sol * 1_000_000_000.0) as u64;
         let system_balance = ctx.accounts.system.to_account_info().lamports();
+
         if system_balance < amount_lamports {
             return Err(ErrorCode::UnavailableBalance.into());
         }
 
-        // Thực hiện chuyển SOL từ author qua system
         let transfer_instruction = system_instruction::transfer(
             &ctx.accounts.system.key(),
             &ctx.accounts.owner.key(),
@@ -45,16 +46,13 @@ pub fn exec(ctx: Context<DeleteForm>) -> Result<()> {
         );
 
         match result {
-            Ok(_) => {
-                return Ok(());
-            }
+            Ok(_) => (),
             Err(err) => {
                 msg!("Failed to transfer SOL: {:?}", err);
-                return Err(ErrorCode::TransferFailed.into())
+                return Err(ErrorCode::TransferFailed.into());
             }
         }
     }
-    else {
-        Ok(())
-    }
+
+    Ok(())
 }

@@ -11,14 +11,15 @@ pub struct Form {
     pub content: String, // 4 + len()
     pub visits: u32, // 4
     pub submissions: u32, // 4
-    pub sum_sol: u64, // 8
-    pub remain_sol: u64, //8
-    pub sol_per_user: u64, // 8
-    pub published: bool // 1
+    pub sum_sol: f64, // 8
+    pub remain_sol: f64, //8
+    pub sol_per_user: f64, // 8
+    pub published: bool, // 1
+    pub mint: Option<Pubkey> // 1 (discriminator) + 32 (Pubkey)
 }
 impl Form {
    pub fn get_current_size(&self) -> usize {
-      8 + 4 + self.id.len() + 32 + 32 + 4 + self.name.len() + 4 + self.description.len() + 8 + 4 + self.content.len() + 4 + 4 + 8 + 8 + 8 + 1
+      8 + 4 + self.id.len() + 32 + 32 + 4 + self.name.len() + 4 + self.description.len() + 8 + 4 + self.content.len() + 4 + 4 + 8 + 8 + 8 + 1 + 1 + 32
    }
    pub fn get_current_content_len(&self) -> usize {
     self.content.len()

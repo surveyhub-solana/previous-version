@@ -3,7 +3,12 @@ import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import { IDL } from '@/config/anchor/idl';
-import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
+import {
+  IdlAccounts,
+  ProgramAccount,
+  utils,
+  web3,
+} from '@project-serum/anchor';
 import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 import crypto from 'crypto';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
@@ -16,8 +21,7 @@ export async function POST(req: Request) {
       id,
       content,
       authorPubkey,
-    }: { id: string; content: string; authorPubkey: string } =
-      await req.json();
+    }: { id: string; content: string; authorPubkey: string } = await req.json();
     if (!id || !content) {
       return new Response(JSON.stringify('Id and content are required!'), {
         headers: {
@@ -63,32 +67,66 @@ export async function POST(req: Request) {
       [Buffer.from(submission_id), authorPublicKey.toBuffer()],
       PROGRAM_ADDRESS
     );
-    const formAccount = formAccounts[0].publicKey;
-   const tx = new Transaction();
-   const submitFormInstruction = await program.methods
-     .submitForm(content, submission_id)
-     .accounts({
-       form: formAccount,
-       formSubmission: formSubmissionAccount,
-       author: authorPublicKey,
-       system: systemKeypair.publicKey,
-       systemProgram: anchor.web3.SystemProgram.programId,
-     })
-     .instruction();
+    const formAccount = formAccounts[0];
+    const tx = new Transaction();
+    // Lấy token_address từ formAccount
+    // Lấy mint từ formAccount
+    const mint = formAccount.account.mint as PublicKey;
 
-   tx.add(submitFormInstruction);
+    let submitFormInstruction;
+    if (mint) {
+      // Trường hợp có mint (token_address)
+      const systemTokenAccount = await utils.token.associatedAddress({
+        mint: mint,
+        owner: systemKeypair.publicKey,
+      });
 
-   // Set feePayer to authorPublicKey
-   tx.feePayer = authorPublicKey;
-   const recentBlockhash = await provider.connection.getRecentBlockhash();
-   tx.recentBlockhash = recentBlockhash.blockhash;
+      const authorTokenAccount = await utils.token.associatedAddress({
+        mint: mint,
+        owner: authorPublicKey,
+      });
+      submitFormInstruction = await program.methods
+        .submitFormToken(content, submission_id)
+        .accounts({
+          form: formAccount.publicKey,
+          formSubmission: formSubmissionAccount,
+          author: authorPublicKey,
+          system: systemKeypair.publicKey,
+          systemTokenAccount: systemTokenAccount,
+          authorTokenAccount: authorTokenAccount,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
+          associatedTokenProgram: anchor.utils.token.ASSOCIATED_PROGRAM_ID,
+          rent: web3.SYSVAR_RENT_PUBKEY,
+        })
+        .instruction();
+    } else {
+      // Trường hợp không có mint (token_address)
+      submitFormInstruction = await program.methods
+        .submitForm(content, submission_id)
+        .accounts({
+          form: formAccount.publicKey,
+          formSubmission: formSubmissionAccount,
+          author: authorPublicKey,
+          system: systemKeypair.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .instruction();
+    }
 
-   // Ký giao dịch bằng keypair hệ thống trước
-   tx.partialSign(systemKeypair);
+    tx.add(submitFormInstruction);
 
-   // Serialize transaction and send to user for signature
-   const serializedTx = tx.serialize({ requireAllSignatures: false });
-   const base64Tx = serializedTx.toString('base64');
+    // Set feePayer to authorPublicKey
+    tx.feePayer = authorPublicKey;
+    const recentBlockhash = await provider.connection.getRecentBlockhash();
+    tx.recentBlockhash = recentBlockhash.blockhash;
+
+    // Ký giao dịch bằng keypair hệ thống trước
+    tx.partialSign(systemKeypair);
+
+    // Serialize transaction and send to user for signature
+    const serializedTx = tx.serialize({ requireAllSignatures: false });
+    const base64Tx = serializedTx.toString('base64');
 
     return new Response(
       JSON.stringify({ transaction: base64Tx, id: submission_id }),

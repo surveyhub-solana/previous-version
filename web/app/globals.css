@@ -39,3 +39,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.no-margin-top {
+  margin-top: 0 !important;
+}

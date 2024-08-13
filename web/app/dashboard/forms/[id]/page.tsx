@@ -64,7 +64,7 @@ export default function FormDetailPage({
             return;
           }
           try {
-            const fetchedStats = await getStats(publicKey?.toString());
+            const fetchedStats = await getStats(publicKey?.toString(), id);
             if (fetchedStats) setStats(fetchedStats);
           } catch (error) {
             console.error('Error fetching stats:', error);
@@ -136,13 +136,15 @@ export default function FormDetailPage({
           <div className="w-full flex py-6 container">
             <div className="w-fit ms-auto me-0 text-sm font-medium text-muted-foreground text-right">
               <div>
-                Total lamports used: {new BN(form.sumSol, 16).toString()}
+                Total {form.mint ? 'Token' : 'SOL'} used:{' '}
+                {new BN(form.sumSol, 16).toString()}
               </div>
               <div>
-                Remaining lamports: {new BN(form.remainSol, 16).toString()}
+                Remaining {form.mint ? 'Token' : 'SOL'}:{' '}
+                {new BN(form.remainSol, 16).toString()}
               </div>
               <div>
-                Lamports per respondent:{' '}
+                {form.mint ? 'Token' : 'SOL'} per respondent:{' '}
                 {new BN(form.solPerUser, 16).toString()}
               </div>
             </div>

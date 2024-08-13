@@ -32,19 +32,27 @@ import { updateFormSchema, updateFormSchemaType } from '@/schemas/form';
 import { publishForm, updateFormSOL } from '@/app/services/form';
 
 function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending] = useTransition();
   const [isPublishing, setIsPublishing] = useState(false);
   const wallet = useWallet();
   const { connection } = useConnection();
   const form = useForm<updateFormSchemaType>({
     resolver: zodResolver(updateFormSchema),
     defaultValues: {
-      sumSOL: 1,
-      SOLPerUser: 1,
+      sumSOL: '1',
+      SOLPerUser: '1',
+      tokenAddress: '',
+      checkAdvanced: false, // default to false
     },
   });
 
   async function onSubmit(values: updateFormSchemaType) {
+    const f_values: {
+      sumSOL: number;
+      SOLPerUser: number;
+    } = { sumSOL: 0, SOLPerUser: 0 };
+    f_values.sumSOL = parseFloat(values.sumSOL);
+    f_values.SOLPerUser = parseFloat(values.SOLPerUser);
     setIsPublishing(true);
     try {
       if (!publicKey) {
@@ -55,12 +63,13 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
         return;
       }
 
-      if (values.sumSOL >= 0 && values.SOLPerUser >= 0) {
-        if (values.sumSOL !== 0 && values.SOLPerUser !== 0) {
+      if (f_values.sumSOL >= 0 && f_values.SOLPerUser >= 0) {
+        if (f_values.sumSOL !== 0 && f_values.SOLPerUser !== 0) {
           const transactionAndId = await updateFormSOL({
             id: id,
-            sum_sol: values.sumSOL,
-            sol_per_user: values.SOLPerUser,
+            sum_sol: f_values.sumSOL,
+            sol_per_user: f_values.SOLPerUser,
+            token_address: values.tokenAddress || '',
             ownerPubkey: publicKey.toString(),
           });
 
@@ -113,7 +122,6 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
             });
           }
         }
-
       } else {
         toast({
           title: 'Error',
@@ -152,6 +160,7 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
               provide you with information
             </span>
           </AlertDialogDescription>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
               <FormField
@@ -160,17 +169,15 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      The total number of lamports used for this form is:
+                      The total number of SOL used for this form is:
                     </FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
+                        type="text"
                         step="any"
                         {...field}
-                        value={field.value ?? 1}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value))
-                        }
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -183,23 +190,64 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      The number of lamports each respondent receives is:
+                      The number of SOL each respondent receives is:
                     </FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
+                        type="text"
                         step="any"
                         {...field}
-                        value={field.value ?? 1}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value))
-                        }
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="checkAdvanced"
+                render={({ field }) => (
+                  <FormItem className="items-center flex pt-2">
+                    <FormControl className="items-center flex justify-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        ref={field.ref}
+                        className="checkbox" // Ensure you have the right class for styling
+                      />
+                    </FormControl>
+                    <FormLabel className="h-full flex items-center no-margin-top ps-1">
+                      Advanced
+                    </FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {form.watch('checkAdvanced') && (
+                <FormField
+                  control={form.control}
+                  name="tokenAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Token Address (Optional):</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          placeholder="Enter a valid Solana address"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </form>
           </Form>
         </AlertDialogHeader>

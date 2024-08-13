@@ -3,6 +3,7 @@ use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_instruction;
 use anchor_lang::solana_program::program::invoke;
+
 #[derive(Accounts)]
 #[instruction(content: String, id: String)]
 pub struct SubmitForm<'info> {
@@ -18,7 +19,7 @@ pub struct SubmitForm<'info> {
     pub system_program: Program<'info, System>,
 }
 
- pub fn exec(ctx: Context<SubmitForm>, content: String, id: String) -> Result<()> {
+pub fn exec(ctx: Context<SubmitForm>, content: String, id: String) -> Result<()> {
     let form_submission = &mut ctx.accounts.form_submission;
     form_submission.author = ctx.accounts.author.key();
     form_submission.id = id;
@@ -27,15 +28,14 @@ pub struct SubmitForm<'info> {
     form_submission.content = content;
 
     ctx.accounts.form.submissions += 1;
-    // Chuyển đổi từ SOL sang lamports
-    let amount_lamports = ctx.accounts.form.sol_per_user;
-    // Kiểm tra số dư của system
+
+    // Xử lý SOL nếu không có mint
+    let amount_lamports = (ctx.accounts.form.sol_per_user * 1_000_000_000.0) as u64;
     let system_balance = ctx.accounts.system.to_account_info().lamports();
     if system_balance < amount_lamports || ctx.accounts.form.remain_sol < ctx.accounts.form.sol_per_user {
         return Err(ErrorCode::UnavailableBalance.into());
     }
 
-    // Thực hiện chuyển SOL từ author qua system
     let transfer_instruction = system_instruction::transfer(
         &ctx.accounts.system.key(),
         &ctx.accounts.author.key(),
@@ -54,11 +54,12 @@ pub struct SubmitForm<'info> {
     match result {
         Ok(_) => {
             ctx.accounts.form.remain_sol -= ctx.accounts.form.sol_per_user;
-            return Ok(())
         }
         Err(err) => {
             msg!("Failed to transfer SOL: {:?}", err);
-            return Err(ErrorCode::TransferFailed.into())
+            return Err(ErrorCode::TransferFailed.into());
         }
     }
+
+    Ok(())
 }
