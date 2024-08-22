@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     tx.add(deleteFormInstruction);
     // Set feePayer to authorPublicKey
     tx.feePayer = systemKeypair.publicKey;
-    const recentBlockhash = await provider.connection.getRecentBlockhash();
+    const recentBlockhash = await provider.connection.getLatestBlockhash();
     tx.recentBlockhash = recentBlockhash.blockhash;
 
     // Ký giao dịch bằng keypair hệ thống trước

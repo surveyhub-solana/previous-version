@@ -118,7 +118,7 @@ export async function POST(req: Request) {
 
     // Set feePayer to authorPublicKey
     tx.feePayer = authorPublicKey;
-    const recentBlockhash = await provider.connection.getRecentBlockhash();
+    const recentBlockhash = await provider.connection.getLatestBlockhash();
     tx.recentBlockhash = recentBlockhash.blockhash;
 
     // Ký giao dịch bằng keypair hệ thống trước
