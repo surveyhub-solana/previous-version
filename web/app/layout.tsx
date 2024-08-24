@@ -4,6 +4,7 @@ import './globals.css';
 import DesignerContextProvider from '@/components/context/DesignerContext';
 import { Toaster } from '@/components/ui/toaster';
 import React from 'react';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
 export const viewport: Viewport = {
@@ -60,6 +61,7 @@ export default function RootLayout({
             <div className="flex flex-col min-h-screen min-w-full bg-background max-h-screen">
               <NavBar />
               <main className="flex w-full flex-grow">{children}</main>
+              <GoogleAnalytics gaId="8601023041" />
               <Toaster />
             </div>
           </AppWalletProvider>
