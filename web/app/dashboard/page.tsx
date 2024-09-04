@@ -28,8 +28,11 @@ import { getOwnForms, getStats, deleteForm } from '@/action/form';
 import { Form } from '../services/type';
 import { toast } from '@/components/ui/use-toast';
 import { IFormWithId } from '@/lib/type';
+import Readme from '@/components/Readme';
 
 export default function Home() {
+  const wallet = useWallet();
+  if(!wallet) return <Readme />;
   return (
     <div className="container pt-4">
       <Suspense fallback={<StatsCards loading={true} />}>

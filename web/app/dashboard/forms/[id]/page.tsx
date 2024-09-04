@@ -33,6 +33,7 @@ import {
 import { Form, FormSubmissions } from '@/app/services/type';
 import BN from 'bn.js';
 import { IFormSubmission, IFormWithId } from '@/lib/type';
+import Readme from '@/components/Readme';
 
 export default function FormDetailPage({
   params,
@@ -88,7 +89,7 @@ export default function FormDetailPage({
 
   return (
     <>
-      {!publicKey && <div>Bạn chưa đăng nhập ví</div>}
+      {!publicKey && <Readme />}
       {publicKey && form && (
         <>
           <div className="py-10 border-b border-muted">
@@ -208,6 +209,7 @@ function SubmissionsTable({
           case 'DateField':
           case 'SelectField':
           case 'CheckboxField':
+          case 'ImageField':
             setColumns((prevColumns) => [
               ...prevColumns,
               {

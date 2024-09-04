@@ -6,6 +6,7 @@ import { FormElementInstance } from '@/components/FormElements';
 import FormSubmitComponent from '@/components/FormSubmitComponent';
 import { useWallet } from '@solana/wallet-adapter-react';
 import React from 'react';
+import Readme from '@/components/Readme';
 
 function SubmitPage({
   params,
@@ -44,7 +45,7 @@ function SubmitPage({
 
   return (
     <>
-      {!publicKey && <div>Bạn chưa đăng nhập ví</div>}
+      {!publicKey && <Readme />}
       {publicKey && formContent && (
         <FormSubmitComponent
           formUrl={params.formUrl}

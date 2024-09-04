@@ -6,6 +6,7 @@ import { Form } from '@/app/services/type';
 // import { getFormByOwner } from '@/app/services/form';
 import { getFormByOwner } from '@/action/form';
 import { IFormWithId } from '@/lib/type';
+import Readme from '@/components/Readme';
 
 export default function BuilderPage({
   params,
@@ -45,7 +46,7 @@ export default function BuilderPage({
   // return <FormBuilder form={form} />;
   return (
     <>
-      {!publicKey && <div>Bạn chưa đăng nhập ví</div>}
+      {!publicKey && <Readme />}
       {publicKey && form != null && (
         <FormBuilder publicKey={publicKey?.toString()} form={form} />
       )}
