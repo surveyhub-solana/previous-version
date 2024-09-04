@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function Readme() {
   return (
     <div className="w-full flex overflow-auto items-center justify-center py-4">
-      <div className="h-fit w-[60%]">
+      <div className="h-fit md:w-[60%]">
         <div className="flex-none">
           <div className="text-2xl font-bold">
             Getting Started with SurveyHub
