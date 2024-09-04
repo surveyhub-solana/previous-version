@@ -20,13 +20,19 @@ import { format, formatDistance } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useWallet } from '@solana/wallet-adapter-react';
+// import {
+//   getFormByOwner,
+//   getFormWithSubmissions,
+//   getStats,
+// } from '@/app/services/form';
 import {
   getFormByOwner,
   getFormWithSubmissions,
   getStats,
-} from '@/app/services/form';
+} from '@/action/form';
 import { Form, FormSubmissions } from '@/app/services/type';
 import BN from 'bn.js';
+import { IFormSubmission, IFormWithId } from '@/lib/type';
 
 export default function FormDetailPage({
   params,
@@ -37,7 +43,7 @@ export default function FormDetailPage({
 }) {
   const { id } = params;
   const { publicKey } = useWallet();
-  const [form, setForm] = useState<Form>();
+  const [form, setForm] = useState<IFormWithId>(); // blockchain
   const [stats, setStats] = useState({
     visits: 0,
     submissions: 0,
@@ -51,10 +57,11 @@ export default function FormDetailPage({
       } else {
         try {
           try {
-            const fetchedForm: Form | null = await getFormByOwner({
-              id: id,
-              ownerPubkey: publicKey.toString(),
-            });
+            const fetchedForm: IFormWithId | null = await getFormByOwner(
+              // blockchain
+              id,
+              publicKey.toString()
+            );
             if (!fetchedForm) {
               throw new Error('form not found');
             }
@@ -87,12 +94,12 @@ export default function FormDetailPage({
           <div className="py-10 border-b border-muted">
             <div className="flex justify-between container">
               <h1 className="text-4xl font-bold truncate">{form.name}</h1>
-              <VisitBtn shareUrl={form.id} />
+              <VisitBtn shareUrl={form._id} />
             </div>
           </div>
           <div className="py-4 border-b border-muted">
             <div className="container flex gap-2 items-center justify-between">
-              <FormLinkShare shareUrl={form.id} />
+              <FormLinkShare shareUrl={form._id} />
             </div>
           </div>
           <div className="w-full pt-8 gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 container">
@@ -133,7 +140,8 @@ export default function FormDetailPage({
             />
           </div>
 
-          <div className="w-full flex py-6 container">
+          {/* blockchain
+           <div className="w-full flex py-6 container">
             <div className="w-fit ms-auto me-0 text-sm font-medium text-muted-foreground text-right">
               <div>
                 Total {form.mint ? 'Token' : 'SOL'} used:{' '}
@@ -148,10 +156,10 @@ export default function FormDetailPage({
                 {new BN(form.solPerUser, 16).toString()}
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="container">
-            <SubmissionsTable publicKey={publicKey.toString()} id={form.id} />
+            <SubmissionsTable publicKey={publicKey.toString()} id={form._id} />
           </div>
         </>
       )}
@@ -181,10 +189,10 @@ function SubmissionsTable({
   const [rows, setRows] = useState<Row[]>([]);
   useEffect(() => {
     async function fetchSubmissions() {
-      const fetchedFormWithSubmissions = await getFormWithSubmissions({
+      const fetchedFormWithSubmissions = await getFormWithSubmissions(
         id,
-        ownerPubkey: publicKey,
-      });
+        publicKey
+      );
       if (!fetchedFormWithSubmissions) throw new Error('form not found');
       const { form, submissions } = fetchedFormWithSubmissions;
       setColumns([]);
@@ -215,13 +223,15 @@ function SubmissionsTable({
         }
       });
 
-      submissions.forEach((submission: FormSubmissions) => {
+      submissions.forEach((submission: IFormSubmission) => {
+        // blockchain : FormSubmissions
         const content = JSON.parse(submission.content);
         setRows((prevRows) => [
           ...prevRows,
           {
             ...content,
-            submittedAt: parseInt(submission.createdAt, 16) * 1000,
+            // submittedAt: parseInt(submission.createdAt, 16) * 1000, // blockchain
+            submittedAt: submission.created_at,
           },
         ]);
       });

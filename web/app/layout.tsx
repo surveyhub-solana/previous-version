@@ -60,7 +60,9 @@ export default function RootLayout({
           <AppWalletProvider>
             <div className="flex flex-col min-h-screen min-w-full bg-background max-h-screen">
               <NavBar />
-              <main className="flex w-full flex-grow">{children}</main>
+              <main className="flex w-full flex-grow overflow-hidden">
+                {children}
+              </main>
               <GoogleAnalytics gaId="G-YXJ9S5SVWR" />
               <Toaster />
             </div>

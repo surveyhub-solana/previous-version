@@ -21,6 +21,7 @@ export default function NavBar() {
       setBalance(authorBalance);
     };
     getBalance();
+    if (!wallet) setBalance(0);
   }, [wallet, connection]);
   return (
     <nav className="flex justify-end sm:justify-between items-center border-b border-border h-[60px] px-4 py-2">

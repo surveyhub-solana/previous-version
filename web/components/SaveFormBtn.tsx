@@ -5,7 +5,8 @@ import useDesigner from './hooks/useDesigner';
 import { toast } from './ui/use-toast';
 import { FaSpinner } from 'react-icons/fa';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { updateFormContent } from '@/app/services/form';
+// import { updateFormContent } from '@/app/services/form';
+import { updateFormContent } from '@/action/form';
 import { Connection } from '@solana/web3.js';
 import { DEFAULT_COMMITMENT, NODE_URL } from '@/config/anchor/constants';
 
@@ -25,39 +26,56 @@ function SaveFormBtn({ id }: { id: string }) {
           description: 'You are not logged in to the wallet',
         });
       } else {
-        const transactionAndId = await updateFormContent({
-          id: id,
-          new_content: jsonElements,
-          ownerPubkey: publicKey.toString(),
-        });
-        if (transactionAndId) {
-          // Ký giao dịch bằng ví của người dùng (ở phía client)
-          if (wallet.signTransaction) {
-            // Ký giao dịch bằng ví của người dùng (ở phía client)
-            const signedTx = await wallet.signTransaction(transactionAndId.tx);
+        // const transactionAndId = await updateFormContent({
+        //   id: id,
+        //   new_content: jsonElements,
+        //   ownerPubkey: publicKey.toString(),
+        // });
+        // if (transactionAndId) {
+        //   // Ký giao dịch bằng ví của người dùng (ở phía client)
+        //   if (wallet.signTransaction) {
+        //     // Ký giao dịch bằng ví của người dùng (ở phía client)
+        //     const signedTx = await wallet.signTransaction(transactionAndId.tx);
 
-            // Phát sóng giao dịch lên mạng Solana
-            const txId = await connection.sendRawTransaction(
-              signedTx.serialize()
-            );
-            console.log('Transaction ID:', txId);
-            toast({
-              title: 'Success',
-              description: 'Form updated successfully',
-            });
-          } else {
-            console.error('Wallet does not support signing transactions');
-            toast({
-              title: 'Error',
-              description: 'Wallet does not support signing transactions',
-              variant: 'destructive',
-            });
-          }
-        } else {
+        //     // Phát sóng giao dịch lên mạng Solana
+        //     const txId = await connection.sendRawTransaction(
+        //       signedTx.serialize()
+        //     );
+        //     console.log('Transaction ID:', txId);
+        //     toast({
+        //       title: 'Success',
+        //       description: 'Form updated successfully',
+        //     });
+        //   } else {
+        //     console.error('Wallet does not support signing transactions');
+        //     toast({
+        //       title: 'Error',
+        //       description: 'Wallet does not support signing transactions',
+        //       variant: 'destructive',
+        //     });
+        //   }
+        // } else {
+        //   toast({
+        //     title: 'Error',
+        //     description: 'Error initiating a transaction from the server',
+        //     variant: 'destructive',
+        //   });
+        // }
+        const updateSuccess = updateFormContent(
+          id,
+          jsonElements,
+          publicKey.toString()
+        );
+        if (!updateSuccess) {
           toast({
             title: 'Error',
-            description: 'Error initiating a transaction from the server',
+            description: 'Failed to update form content. Please try again.',
             variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Success',
+            description: 'Form content updated successfully.',
           });
         }
       }

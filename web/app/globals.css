@@ -43,3 +43,22 @@
 .no-margin-top {
   margin-top: 0 !important;
 }
+
+/* Tùy chỉnh scrollbar cho trình duyệt WebKit (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 8px; /* Độ rộng của scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff00; /* Màu nền của track */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #555; /* Màu của thanh cuộn */
+  border-radius: 10px; /* Bo góc của thanh cuộn */
+  border: 2px solid #ffffff00; /* Viền xung quanh thanh cuộn */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground)); /* Màu khi hover */
+}

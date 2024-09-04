@@ -22,8 +22,15 @@ import Link from 'next/link';
 import { BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import Confetti from 'react-confetti';
 import { Form } from '@/app/services/type';
-
-function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
+import { IFormWithId } from '@/lib/type';
+// blockchain form: Form
+function FormBuilder({
+  form,
+  publicKey,
+}: {
+  form: IFormWithId;
+  publicKey: string;
+}) {
   const { setElements, setSelectedElement } = useDesigner();
   const [isReady, setIsReady] = useState(false);
 
@@ -59,11 +66,11 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
     );
   }
 
-  const shareUrl = `${window.location.origin}/submit/${form.id}`;
+  const shareUrl = `${window.location.origin}/submit/${form._id}`;
 
   if (form.published) {
     return (
-      <>
+      <div className="w-full h-full overflow-hidden relative">
         <Confetti
           width={window.innerWidth}
           height={window.innerHeight}
@@ -72,7 +79,7 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
         />
         <div className="flex flex-col items-center justify-center h-full w-full">
           <div className="max-w-md">
-            <h1 className="text-center text-4xl font-bold text-primary border-b pb-2 mb-10">
+            <h1 className="text-center text-3xl font-bold text-primary border-b pb-2 mb-10">
               🎊🎊Form Published🎊🎊
             </h1>
             <h2 className="text-2xl">Share this form</h2>
@@ -102,7 +109,7 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
                 </Link>
               </Button>
               <Button variant={'link'} asChild>
-                <Link href={`/dashboard/forms/${form.id}`} className="gap-2">
+                <Link href={`/dashboard/forms/${form._id}`} className="gap-2">
                   Form details
                   <BsArrowRight />
                 </Link>
@@ -110,7 +117,7 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
             </div>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -126,8 +133,8 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
             <PreviewDialogBtn />
             {!form.published && (
               <>
-                <SaveFormBtn id={form.id} />
-                <PublishFormBtn publicKey={publicKey} id={form.id} />
+                <SaveFormBtn id={form._id} />
+                <PublishFormBtn publicKey={publicKey} id={form._id} />
               </>
             )}
           </div>

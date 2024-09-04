@@ -29,9 +29,10 @@ import { toast } from './ui/use-toast';
 import { BsFileEarmarkPlus } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
-import { Connection, Transaction } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { NODE_URL, DEFAULT_COMMITMENT } from '@/config/anchor/constants';
-import { createForm } from '@/app/services/form';
+// import { createForm } from '@/app/services/form';
+import { createForm } from '@/action/form';
 
 function CreateFormBtn() {
   const router = useRouter();
@@ -59,40 +60,57 @@ function CreateFormBtn() {
           description: 'You are not logged in to the wallet',
         });
       } else {
-        const transactionAndId = await createForm({
+        //code cũ blockchain
+        // const transactionAndId = await createForm({
+        //   ...values,
+        //   ownerPubkey: publicKey.toString(),
+        // });
+        // if (transactionAndId) {
+        //   // Ký giao dịch bằng ví của người dùng (ở phía client)
+        //   if (wallet.signTransaction) {
+        //     // Ký giao dịch bằng ví của người dùng (ở phía client)
+        //     const signedTx = await wallet.signTransaction(transactionAndId.tx);
+        //     // Phát sóng giao dịch lên mạng Solana
+        //     const txId = await connection.sendRawTransaction(
+        //       signedTx.serialize()
+        //     );
+        //     console.log('Transaction ID:', txId);
+        //     toast({
+        //       title: 'Success',
+        //       description: 'Form created successfully',
+        //     });
+        //     router.push(`/dashboard/builder/${transactionAndId.id}`);
+        //   } else {
+        //     console.error('Wallet does not support signing transactions');
+        //     toast({
+        //       title: 'Error',
+        //       description: 'Wallet does not support signing transactions',
+        //       variant: 'destructive',
+        //     });
+        //   }
+        // } else {
+        //   toast({
+        //     title: 'Error',
+        //     description: 'Error initiating a transaction from the server',
+        //     variant: 'destructive',
+        //   });
+        // }
+        const form = await createForm({
           ...values,
           ownerPubkey: publicKey.toString(),
         });
-        if (transactionAndId) {
-          // Ký giao dịch bằng ví của người dùng (ở phía client)
-          if (wallet.signTransaction) {
-            // Ký giao dịch bằng ví của người dùng (ở phía client)
-            const signedTx = await wallet.signTransaction(transactionAndId.tx);
-
-            // Phát sóng giao dịch lên mạng Solana
-            const txId = await connection.sendRawTransaction(
-              signedTx.serialize()
-            );
-            console.log('Transaction ID:', txId);
-            toast({
-              title: 'Success',
-              description: 'Form created successfully',
-            });
-            router.push(`/dashboard/builder/${transactionAndId.id}`);
-          } else {
-            console.error('Wallet does not support signing transactions');
-            toast({
-              title: 'Error',
-              description: 'Wallet does not support signing transactions',
-              variant: 'destructive',
-            });
-          }
-        } else {
+        if (!form) {
           toast({
             title: 'Error',
-            description: 'Error initiating a transaction from the server',
+            description: 'Failed to create form. Please try again.',
             variant: 'destructive',
           });
+        } else {
+          toast({
+            title: 'Success',
+            description: 'Form created successfully.',
+          });
+          router.push(`/dashboard/builder/${form._id}`);
         }
       }
     } catch (error) {

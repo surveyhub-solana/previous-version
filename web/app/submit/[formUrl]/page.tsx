@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getForm } from '@/app/services/form';
+// import { getForm } from '@/app/services/form';
+import { getForm } from '@/action/form';
 import { FormElementInstance } from '@/components/FormElements';
 import FormSubmitComponent from '@/components/FormSubmitComponent';
 import { useWallet } from '@solana/wallet-adapter-react';

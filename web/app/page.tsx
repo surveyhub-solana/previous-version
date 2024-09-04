@@ -16,26 +16,36 @@ import { FaWpforms } from 'react-icons/fa';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
-import { getAllForms } from './services/form';
+// import { getAllForms } from './services/form';
+import { getAllForms } from '@/action/form';
 import { Form } from './services/type';
 import { Button } from '@/components/ui/button';
+import { IForm, IFormWithId } from '@/lib/type';
+import Readme from '@/components/Readme';
 export default function Home() {
+  const { publicKey } = useWallet();
   return (
-    <div className="container pt-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Suspense
-          fallback={
-            <div>
-              {[1, 2, 3, 4].map((el) => (
-                <FormCardSkeleton key={el} />
-              ))}
-            </div>
-          }
-        >
-          <FormCards />
-        </Suspense>
-      </div>
-    </div>
+    <>
+      {publicKey !== null ? (
+        <div className="container pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Suspense
+              fallback={
+                <div>
+                  {[1, 2, 3, 4].map((el) => (
+                    <FormCardSkeleton key={el} />
+                  ))}
+                </div>
+              }
+            >
+              <FormCards />
+            </Suspense>
+          </div>
+        </div>
+      ) : (
+        <Readme />
+      )}
+    </>
   );
 }
 
@@ -45,7 +55,7 @@ function FormCardSkeleton() {
 
 function FormCards() {
   const { publicKey } = useWallet();
-  const [forms, setForms] = useState<Form[]>([]);
+  const [forms, setForms] = useState<IFormWithId[]>([]); // blockchain là <Form[]>
   useEffect(() => {
     async function getFormsFromServer() {
       if (!publicKey) {
@@ -65,15 +75,16 @@ function FormCards() {
   }, [publicKey]);
   return (
     <>
-      {forms.map((form: Form) => (
-        <FormCard key={form.id} form={form} />
+      {forms.map((form) => (
+        <FormCard key={form._id} form={form} /> // blockchain form.id
       ))}
     </>
   );
 }
-
-function FormCard({ form }: { form: Form }) {
-  const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000;
+//form: Form
+function FormCard({ form }: { form: IFormWithId }) {
+  // const createdAtTimestamp = parseInt(form.createAt, 16) * 1000; -- blockchain
+  const createdAtTimestamp = form.created_at;
   const createdAtDate = new Date(createdAtTimestamp);
   const isValidDate = !isNaN(createdAtDate.getTime());
   return (
@@ -104,7 +115,7 @@ function FormCard({ form }: { form: Form }) {
             <div key={index}>{line}</div>
           ))}
         </div>
-        <div className="text-sm font-medium text-muted-foreground pt-4">
+        {/* <div className="text-sm font-medium text-muted-foreground pt-4">
           Token:{' '}
           {form.mint ? (
             <Link
@@ -116,16 +127,18 @@ function FormCard({ form }: { form: Form }) {
           ) : (
             'SOL'
           )}
-        </div>
-        <div className="text-sm font-medium text-muted-foreground">
+        </div> */}
+        {/* blockchain */}
+        {/* <div className="text-sm font-medium text-muted-foreground">
           Amount per respondent: {new BN(form.solPerUser, 16).toString()}
-        </div>
+        </div> */}
       </CardContent>
       <CardFooter className="mt-auto">
         <Button asChild className="w-full mt-2 text-md gap-4">
-          <Link href={`/submit/${form.id}`}>Fill Out Form</Link>
+          <Link href={`/submit/${form._id}`}>Fill Out Form</Link>
         </Button>
       </CardFooter>
     </Card>
   );
+  // blockchain form.id
 }

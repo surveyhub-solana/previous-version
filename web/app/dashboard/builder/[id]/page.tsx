@@ -3,7 +3,9 @@ import FormBuilder from '@/components/FormBuilder';
 import React, { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Form } from '@/app/services/type';
-import { getFormByOwner } from '@/app/services/form';
+// import { getFormByOwner } from '@/app/services/form';
+import { getFormByOwner } from '@/action/form';
+import { IFormWithId } from '@/lib/type';
 
 export default function BuilderPage({
   params,
@@ -14,7 +16,7 @@ export default function BuilderPage({
 }) {
   const { id } = params;
 
-  const [form, setForm] = useState<Form>();
+  const [form, setForm] = useState<IFormWithId>(); // blockchain Form
   const { publicKey } = useWallet();
   useEffect(() => {
     async function getFormsFromServer() {
@@ -22,10 +24,11 @@ export default function BuilderPage({
         return;
       } else {
         try {
-          const fetchedForm: Form | null = await getFormByOwner({
-            id: id,
-            ownerPubkey: publicKey.toString(),
-          });
+          const fetchedForm: IFormWithId | null = await getFormByOwner(
+            // blockchain : Form
+            id,
+            publicKey.toString()
+          );
           if (!fetchedForm) {
             throw new Error('form not found');
           }
