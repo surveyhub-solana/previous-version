@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import React from 'react';
+import Image from 'next/image';
 
 function Logo() {
   return (
     <Link
       href={'/'}
-      className="hidden sm:block font-bold text-3xl bg-gradient-to-r from-indigo-400 to-cyan-400 text-transparent bg-clip-text hover:cursor-pointer"
+      className="hidden sm:block hover:cursor-pointer h-full aspect-square relative"
     >
-      SurveyHub
+      <Image src={'/SurveyHub-Logo.png'} fill alt="" />
     </Link>
   );
 }

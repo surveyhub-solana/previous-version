@@ -10,8 +10,6 @@ import {
   WithId,
 } from 'mongodb';
 
-
-
 /**
  * Creates a new form
  * @param name - The name of the form
@@ -84,7 +82,9 @@ export async function getAllForms(): Promise<IFormWithId[]> {
 
     // Retrieve all forms from the collection
     // Retrieve all forms from the collection
-    const forms = (await formsCollection.find().toArray()) as WithId<IForm>[];
+    const forms = (await formsCollection
+      .find({ published: true })
+      .toArray()) as WithId<IForm>[];
 
     // Map the results to include _id as a string along with all other fields
     return forms.map((form) => ({
@@ -238,7 +238,7 @@ export async function getForm(id: string): Promise<IFormWithId | null> {
 
     // Find and update the form, incrementing the visits count by 1
     const form = await formsCollection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
+      { _id: new ObjectId(id), published: true },
       { $inc: { visits: 1 } }, // Increment the visits field by 1
       { returnDocument: 'after' } // Return the updated document
     );
