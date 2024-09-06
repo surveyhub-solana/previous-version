@@ -113,8 +113,8 @@ function FormSubmitComponent({
             title: 'Success',
             description: 'Form submitted successfully.',
           });
+          setSubmitted(true)
         }
-
       }
     } catch (error) {
       console.log(error);
@@ -140,38 +140,40 @@ function FormSubmitComponent({
   }
 
   return (
-    <div className="flex justify-center w-full h-full items-center p-8">
-      <div
-        key={renderKey}
-        className="max-w-[620px] flex flex-col gap-4 flex-grow bg-background w-full p-8 overflow-y-auto border shadow-xl shadow-blue-700 rounded"
-      >
-        {content.map((element) => {
-          const FormElement = FormElements[element.type].formComponent;
-          return (
-            <FormElement
-              key={element.id}
-              elementInstance={element}
-              submitValue={submitValue}
-              isInvalid={formErrors.current[element.id]}
-              defaultValue={formValues.current[element.id]}
-            />
-          );
-        })}
-        <Button
-          className="mt-8"
-          onClick={() => {
-            startTransition(submitFormHandle);
-          }}
-          disabled={pending}
+    <div className="w-full h-full p-8 overflow-auto">
+      <div className="w-full h-fit flex justify-center items-center">
+        <div
+          key={renderKey}
+          className="max-w-[620px] flex flex-col gap-4 bg-background w-full p-8 overflow-y-auto border shadow-xl shadow-blue-700 rounded"
         >
-          {!pending && (
-            <>
-              <HiCursorClick className="mr-2" />
-              Submit
-            </>
-          )}
-          {pending && <ImSpinner2 className="animate-spin" />}
-        </Button>
+          {content.map((element) => {
+            const FormElement = FormElements[element.type].formComponent;
+            return (
+              <FormElement
+                key={element.id}
+                elementInstance={element}
+                submitValue={submitValue}
+                isInvalid={formErrors.current[element.id]}
+                defaultValue={formValues.current[element.id]}
+              />
+            );
+          })}
+          <Button
+            className="mt-8"
+            onClick={() => {
+              startTransition(submitFormHandle);
+            }}
+            disabled={pending}
+          >
+            {!pending && (
+              <>
+                <HiCursorClick className="mr-2" />
+                Submit
+              </>
+            )}
+            {pending && <ImSpinner2 className="animate-spin" />}
+          </Button>
+        </div>
       </div>
     </div>
   );

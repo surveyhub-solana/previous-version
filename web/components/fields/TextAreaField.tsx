@@ -101,12 +101,12 @@ function FormComponent({
   const { label, required, placeHolder, helperText, rows } = element.extraAttributes;
   return (
     <div className="flex flex-col gap-2 w-full">
-      <Label className={cn(error && "text-red-500")}>
+      <Label className={`${cn(error && 'text-red-500')} leading-relaxed`}>
         {label}
-        {required && "*"}
+        {required && '*'}
       </Label>
       <Textarea
-        className={cn(error && "border-red-500")}
+        className={cn(error && 'border-red-500')}
         rows={rows}
         placeholder={placeHolder}
         onChange={(e) => setValue(e.target.value)}
@@ -119,7 +119,16 @@ function FormComponent({
         }}
         value={value}
       />
-      {helperText && <p className={cn("text-muted-foreground text-[0.8rem]", error && "text-red-500")}>{helperText}</p>}
+      {helperText && (
+        <p
+          className={cn(
+            'text-muted-foreground text-[0.8rem]',
+            error && 'text-red-500'
+          )}
+        >
+          {helperText}
+        </p>
+      )}
     </div>
   );
 }

@@ -29,10 +29,20 @@ import { Form } from '../services/type';
 import { toast } from '@/components/ui/use-toast';
 import { IFormWithId } from '@/lib/type';
 import Readme from '@/components/Readme';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function Home() {
   const wallet = useWallet();
-  if(!wallet) return <Readme />;
+  if (!wallet) return <Readme />;
   return (
     <div className="container pt-4">
       <Suspense fallback={<StatsCards loading={true} />}>
@@ -152,6 +162,19 @@ function FormCardSkeleton() {
 function FormCards() {
   const { publicKey } = useWallet();
   const [forms, setForms] = useState<IFormWithId[]>([]); // blockchain <Form[]>
+  const [selectedForm, setSelectedForm] = useState<IFormWithId | null>(null);
+  const [open, setOpen] = useState(false); // Trạng thái chung cho AlertDialog
+  const handleOpenDialog = (form: IFormWithId) => {
+    setSelectedForm(form);
+    setOpen(true);
+  };
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
   useEffect(() => {
     async function getFormsFromServer() {
       if (!publicKey) {
@@ -173,13 +196,48 @@ function FormCards() {
     // blockchain form.id
     <>
       {forms.map((form) => (
-        <FormCard key={form._id} form={form} />
+        <FormCard key={form._id} form={form} onOpenDialog={handleOpenDialog} />
       ))}
+      {selectedForm && (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{selectedForm.name}</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs">
+                {new Date(selectedForm.created_at).toLocaleString()}
+              </AlertDialogDescription>
+              <AlertDialogDescription className="whitespace-pre-line">
+                {selectedForm.description}
+              </AlertDialogDescription>
+              <AlertDialogDescription className="whitespace-pre-line">
+                <div>Visits: {selectedForm.visits}</div>
+                <div>Submissions: {selectedForm.submissions}</div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setOpen(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={() => setOpen(false)}>
+                <Link href={`${origin}/submit/${selectedForm._id}`}>
+                  Fill Out Form
+                </Link>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 }
 // blockchain form: Form
-function FormCard({ form }: { form: IFormWithId }) {
+function FormCard({
+  form,
+  onOpenDialog,
+}: {
+  form: IFormWithId;
+  onOpenDialog: (form: IFormWithId) => void;
+}) {
   // const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000; // blockchain
   const createdAtTimestamp = form.created_at;
   const createdAtDate = new Date(createdAtTimestamp);
@@ -232,7 +290,7 @@ function FormCard({ form }: { form: IFormWithId }) {
       //     variant: 'destructive',
       //   });
       // }
-      const deleteSuccess = await deleteForm(form._id, publicKey?.toString())
+      const deleteSuccess = await deleteForm(form._id, publicKey?.toString());
       if (!deleteSuccess) {
         toast({
           title: 'Error',
@@ -245,7 +303,6 @@ function FormCard({ form }: { form: IFormWithId }) {
           description: 'Form deleted successfully.',
         });
       }
-
     } catch (error) {
       console.error('Error during form submission:', error);
       toast({
@@ -283,10 +340,14 @@ function FormCard({ form }: { form: IFormWithId }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 truncate text-sm text-muted-foreground">
-        <div className="h-fit whitespace-pre-wrap break-words">
-          {form.description.split('\n').map((line, index) => (
-            <div key={index}>{line}</div>
-          ))}
+        <div className="h-[20px] whitespace-pre-line line-clamp-1">
+          {form.description}
+        </div>
+        <div
+          onClick={() => onOpenDialog(form)}
+          className="underline cursor-pointer"
+        >
+          Details
         </div>
       </CardContent>
       <CardFooter className="mt-auto">

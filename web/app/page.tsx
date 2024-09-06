@@ -8,6 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import BN from 'bn.js';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense, useEffect, useState } from 'react';
@@ -56,6 +66,19 @@ function FormCardSkeleton() {
 function FormCards() {
   const { publicKey } = useWallet();
   const [forms, setForms] = useState<IFormWithId[]>([]); // blockchain là <Form[]>
+  const [selectedForm, setSelectedForm] = useState<IFormWithId | null>(null);
+  const [open, setOpen] = useState(false); // Trạng thái chung cho AlertDialog
+  const handleOpenDialog = (form: IFormWithId) => {
+    setSelectedForm(form);
+    setOpen(true);
+  };
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
   useEffect(() => {
     async function getFormsFromServer() {
       if (!publicKey) {
@@ -76,13 +99,48 @@ function FormCards() {
   return (
     <>
       {forms.map((form) => (
-        <FormCard key={form._id} form={form} /> // blockchain form.id
+        <FormCard key={form._id} form={form} onOpenDialog={handleOpenDialog} /> // blockchain form.id
       ))}
+      {selectedForm && (
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{selectedForm.name}</AlertDialogTitle>
+              <AlertDialogDescription className="text-xs">
+                {new Date(selectedForm.created_at).toLocaleString()}
+              </AlertDialogDescription>
+              <AlertDialogDescription className="whitespace-pre-line">
+                {selectedForm.description}
+              </AlertDialogDescription>
+              <AlertDialogDescription className="whitespace-pre-line">
+                <div>Visits: {selectedForm.visits}</div>
+                <div>Submissions: {selectedForm.submissions}</div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setOpen(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={() => setOpen(false)}>
+                <Link href={`${origin}/submit/${selectedForm._id}`}>
+                  Fill Out Form
+                </Link>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 }
 //form: Form
-function FormCard({ form }: { form: IFormWithId }) {
+function FormCard({
+  form,
+  onOpenDialog,
+}: {
+  form: IFormWithId;
+  onOpenDialog: (form: IFormWithId) => void;
+}) {
   // const createdAtTimestamp = parseInt(form.createAt, 16) * 1000; -- blockchain
   const createdAtTimestamp = form.created_at;
   const createdAtDate = new Date(createdAtTimestamp);
@@ -110,10 +168,14 @@ function FormCard({ form }: { form: IFormWithId }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 truncate text-sm text-muted-foreground">
-        <div className="h-fit whitespace-pre-wrap break-words">
-          {form.description.split('\n').map((line, index) => (
-            <div key={index}>{line}</div>
-          ))}
+        <div className="h-[24px] whitespace-pre-line line-clamp-1 break-words">
+          {form.description}
+        </div>
+        <div
+          onClick={() => onOpenDialog(form)}
+          className="underline cursor-pointer"
+        >
+          Details
         </div>
         {/* <div className="text-sm font-medium text-muted-foreground pt-4">
           Token:{' '}

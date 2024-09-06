@@ -69,13 +69,18 @@ function DesignerComponent({ elementInstance }: { elementInstance: FormElementIn
     <div className="flex flex-col gap-2 w-full">
       <Label>
         {label}
-        {required && "*"}
+        {required && '*'}
       </Label>
-      <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+      <Button
+        variant={'outline'}
+        className="w-full justify-start text-left font-normal"
+      >
         <CalendarIcon className="mr-2 h-4 w-4" />
         <span>Pick a date</span>
       </Button>
-      {helperText && <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>}
+      {helperText && (
+        <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
+      )}
     </div>
   );
 }
@@ -104,22 +109,22 @@ function FormComponent({
   const { label, required, placeHolder, helperText } = element.extraAttributes;
   return (
     <div className="flex flex-col gap-2 w-full">
-      <Label className={cn(error && "text-red-500")}>
+      <Label className={`${cn(error && 'text-red-500')} leading-relaxed`}>
         {label}
-        {required && "*"}
+        {required && '*'}
       </Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            variant={"outline"}
+            variant={'outline'}
             className={cn(
-              "w-full justify-start text-left font-normal",
-              !date && "text-muted-foreground",
-              error && "border-red-500",
+              'w-full justify-start text-left font-normal',
+              !date && 'text-muted-foreground',
+              error && 'border-red-500'
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "PPP") : <span>Pick a date</span>}
+            {date ? format(date, 'PPP') : <span>Pick a date</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -130,7 +135,7 @@ function FormComponent({
               setDate(date);
 
               if (!submitValue) return;
-              const value = date?.toUTCString() || "";
+              const value = date?.toUTCString() || '';
               const valid = DateFieldFormElement.validate(element, value);
               setError(!valid);
               submitValue(element.id, value);
@@ -138,7 +143,16 @@ function FormComponent({
           />
         </PopoverContent>
       </Popover>
-      {helperText && <p className={cn("text-muted-foreground text-[0.8rem]", error && "text-red-500")}>{helperText}</p>}
+      {helperText && (
+        <p
+          className={cn(
+            'text-muted-foreground text-[0.8rem]',
+            error && 'text-red-500'
+          )}
+        >
+          {helperText}
+        </p>
+      )}
     </div>
   );
 }

@@ -223,7 +223,10 @@ export async function getFormByOwner(
  * @param id - The ID of the form
  * @returns The form document with incremented visits, or null if not found
  */
-export async function getForm(id: string): Promise<IFormWithId | null> {
+export async function getForm(
+  id: string,
+  userPubkey: string
+): Promise<IFormWithId | boolean> {
   try {
     // Validate input parameters
     if (!id || typeof id !== 'string' || !ObjectId.isValid(id)) {
@@ -232,23 +235,31 @@ export async function getForm(id: string): Promise<IFormWithId | null> {
 
     // Connect to the database
     const db = await getDatabase();
+    const formSubmissionsCollection =
+      db.collection<IFormSubmission>('formSubmissions');
 
-    // Get the forms collection from the database
+    // Check if the author has already submitted to this form
+    const existingSubmission = await formSubmissionsCollection.findOne({
+      form_id: id,
+      author: userPubkey,
+    });
     const formsCollection = db.collection<IForm>('forms');
-
-    // Find and update the form, incrementing the visits count by 1
-    const form = await formsCollection.findOneAndUpdate(
-      { _id: new ObjectId(id), published: true },
-      { $inc: { visits: 1 } }, // Increment the visits field by 1
-      { returnDocument: 'after' } // Return the updated document
-    );
-
+    let form: WithId<IForm> | null;
+    if (existingSubmission) {
+      // If a submission from this author already exists, return false
+      return true
+    } else {
+      form = await formsCollection.findOneAndUpdate(
+        { _id: new ObjectId(id), published: true },
+        { $inc: { visits: 1 } }, // Increment the visits field by 1
+        { returnDocument: 'after' } // Return the updated document
+      );
+    }
     // Check if the form was found and updated
     if (!form) {
       // If no form is found, return null
-      return null;
+      return false;
     }
-
     // Return the updated form with _id as a string
     return { ...form, _id: form._id.toString() };
   } catch (error) {
