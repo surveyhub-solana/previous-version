@@ -3,6 +3,7 @@ import { DateFieldFormElement } from './fields/DateField';
 import { ImageFieldFormElement } from './fields/ImageField';
 import { NumberFieldFormElement } from './fields/NumberField';
 import { ParagprahFieldFormElement } from './fields/ParagraphField';
+import { RadioFieldFormElement } from './fields/RadioField';
 import { SelectFieldFormElement } from './fields/SelectField';
 import { SeparatorFieldFormElement } from './fields/SeparatorField';
 import { SpacerFieldFormElement } from './fields/SpacerField';
@@ -23,7 +24,8 @@ export type ElementsType =
   | 'DateField'
   | 'SelectField'
   | 'CheckboxField'
-  | 'ImageField';
+  | 'ImageField'
+  | 'RadioField'
 
 export type SubmitFunction = (key: string, value: string) => void;
 
@@ -74,5 +76,6 @@ export const FormElements: FormElementsType = {
   DateField: DateFieldFormElement,
   SelectField: SelectFieldFormElement,
   CheckboxField: CheckboxFieldFormElement,
-  ImageField: ImageFieldFormElement
+  ImageField: ImageFieldFormElement,
+  RadioField: RadioFieldFormElement
 };

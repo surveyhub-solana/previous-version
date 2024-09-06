@@ -113,7 +113,7 @@ function FormSubmitComponent({
             title: 'Success',
             description: 'Form submitted successfully.',
           });
-          setSubmitted(true)
+          setSubmitted(true);
         }
       }
     } catch (error) {

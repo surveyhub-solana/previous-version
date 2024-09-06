@@ -56,8 +56,8 @@ function SubmitPage({
   return (
     <>
       {!publicKey && <Readme />}
-      {submitted && <ThankYouForSubmission/>}
-      {publicKey && formContent && (
+      {submitted && <ThankYouForSubmission />}
+      {publicKey && !submitted && formContent && (
         <FormSubmitComponent
           formUrl={params.formUrl}
           content={formContent}

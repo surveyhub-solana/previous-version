@@ -13,9 +13,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import useDesigner from '../hooks/useDesigner';
-import { IoMdCheckbox } from 'react-icons/io';
+import { IoMdRadioButtonOn } from 'react-icons/io';
 import { Button } from '../ui/button';
 import { AiOutlineClose, AiOutlinePlus } from 'react-icons/ai';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import {
   Form,
@@ -32,10 +33,10 @@ import { Checkbox } from '../ui/checkbox';
 import { toast } from '../ui/use-toast';
 import { Separator } from '../ui/separator';
 
-const type: ElementsType = 'CheckboxField';
+const type: ElementsType = 'RadioField';
 
 const extraAttributes = {
-  label: 'Checkbox field',
+  label: 'Radio field',
   helperText: 'Helper text',
   required: false,
   options: [] as string[],
@@ -48,7 +49,7 @@ const propertiesSchema = z.object({
   options: z.array(z.string()).default([]),
 });
 
-export const CheckboxFieldFormElement: FormElement = {
+export const RadioFieldFormElement: FormElement = {
   type,
   construct: (id: string) => ({
     id,
@@ -56,8 +57,8 @@ export const CheckboxFieldFormElement: FormElement = {
     extraAttributes,
   }),
   designerBtnElement: {
-    icon: IoMdCheckbox,
-    label: 'CheckBox Field',
+    icon: IoMdRadioButtonOn,
+    label: 'Radio Field',
   },
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
@@ -68,22 +69,15 @@ export const CheckboxFieldFormElement: FormElement = {
     currentValue: string
   ): boolean => {
     const element = formElement as CustomInstance;
-    const array_answers: string[] = JSON.parse(currentValue);
     if (element.extraAttributes.required) {
       if (
         element.extraAttributes.options[
           element.extraAttributes.options.length - 1
         ] == 'input-other'
       )
-        return array_answers.reduce((total, answer) => {
-          return total && answer.length > 0;
-        }, true);
-      else
-        return array_answers.reduce((total, answer) => {
-          return total && element.extraAttributes.options.includes(answer);
-        }, true);
+        return currentValue.length > 0;
+      else return element.extraAttributes.options.includes(currentValue);
     }
-
     return true;
   },
 };
@@ -105,34 +99,37 @@ function DesignerComponent({
         {label}
         {required && '*'}
       </Label>
-      {options.map((option, index) => {
-        return (
-          <div
-            key={`${element.id}-${index}-div`}
-            className="gap-1.5 flex h-9 items-center"
-          >
-            <Checkbox
-              id={`${element.id}-${index}`}
-              key={`${element.id}-${index}-checkbox`}
-            />
-            {option == 'input-other' && index == options.length - 1 ? (
-              <Input
-                key={`${element.id}-${index}-label`}
-                type="text"
-                placeholder="Other..."
-                className="border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0"
+      <RadioGroup>
+        {options.map((option, index) => {
+          return (
+            <div
+              key={`${element.id}-${index}-div`}
+              className="gap-1.5 flex h-9 items-center"
+            >
+              <RadioGroupItem
+                id={`${element.id}-${index}`}
+                key={`${element.id}-${index}-radio`}
+                value={option}
               />
-            ) : (
-              <Label
-                htmlFor={`${element.id}-${index}`}
-                key={`${element.id}-${index}-label`}
-              >
-                {option}
-              </Label>
-            )}
-          </div>
-        );
-      })}
+              {option == 'input-other' && index == options.length - 1 ? (
+                <Input
+                  key={`${element.id}-${index}-label`}
+                  type="text"
+                  placeholder="Other..."
+                  className="border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0"
+                />
+              ) : (
+                <Label
+                  htmlFor={`${element.id}-${index}`}
+                  key={`${element.id}-${index}-label`}
+                >
+                  {option}
+                </Label>
+              )}
+            </div>
+          );
+        })}
+      </RadioGroup>
       {helperText && (
         <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
       )}
@@ -153,28 +150,8 @@ function FormComponent({
 }) {
   const element = elementInstance as CustomInstance;
   const { label, required, helperText, options } = element.extraAttributes;
-  const [values, setValues] = useState<boolean[]>(() => {
-    if (defaultValues == null) {
-      // If defaultValues is null, return an array of 'false' with the same length as 'options'
-      return Array(options.length).fill(false);
-    } else {
-      // Map defaultValues to boolean values, then fill remaining slots with 'false'
-      const defaultMappedValues = defaultValues.map(
-        (defaultValue) => defaultValue === 'true'
-      );
-      const remainingFalseValues = Array(
-        options.length - defaultMappedValues.length
-      ).fill(false);
-      // Concatenate the mapped values and the remaining 'false' values
-      return [...defaultMappedValues, ...remainingFalseValues];
-    }
-  });
-  const [stringValues, setStringValues] = useState<string[]>(() => {
-    const optionValues = [...options];
-    if (options[options.length - 1] == 'input-other')
-      optionValues[optionValues.length - 1] = '';
-    return optionValues;
-  });
+  const [value, setValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState(''); // Quản lý giá trị radio được chọn
 
   const [error, setError] = useState(false);
 
@@ -188,88 +165,62 @@ function FormComponent({
         {label}
         {required && '*'}
       </Label>
-      {options.map((option, index) => {
-        return (
-          <div
-            key={`${element.id}-${index}-div`}
-            className="gap-1.5 flex h-9 items-center"
-          >
-            <Checkbox
-              id={`${element.id}-${index}`}
-              key={`${element.id}-${index}-checkbox`}
-              checked={values[index]}
-              onCheckedChange={async (checked) => {
-                let value = false;
-                if (checked == true) value = true;
-                const newValues = [...values];
-                newValues[index] = value; // do useState không diễn ra ngay lập tức mà lập lịch render nên nếu dùng dữ liệu luôn sẽ là data cũ
-                setValues((prevValues) => {
-                  const newValues = [...prevValues]; // Create a copy of the current array
-                  newValues[index] = value; // Update the value at the specified index (you can set it to true/false or toggle it)
-                  return newValues; // Return the updated array
-                });
-                if (!submitValue) return;
-                const filteredArray = stringValues.filter(
-                  (item, index) => item !== '' && newValues[index] == true
-                ); // Filter out empty strings
-                const resultString = JSON.stringify(filteredArray); // Convert the array to string format
-                const valid = CheckboxFieldFormElement.validate(
-                  element,
-                  resultString
-                );
-                setError(!valid);
-                submitValue(element.id, resultString);
-              }}
-            />
-            {option == 'input-other' && index == options.length - 1 ? (
-              <Input
-                key={`${element.id}-${index}-label`}
-                type="text"
-                placeholder="Other..."
-                className={`${cn(
-                  error && 'text-red-500 border-b-red-500'
-                )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
-                onChange={(e) => {
-                  const newValues = [...values];
-                  newValues[index] = true; // do useState không diễn ra ngay lập tức mà lập lịch render nên nếu dùng dữ liệu luôn sẽ là data cũ
-                  setValues((prevValues) => {
-                    const newValues = [...prevValues]; // Create a copy of the current array
-                    newValues[index] = true; // Update the value at the specified index (you can set it to true/false or toggle it)
-                    return newValues; // Return the updated array
-                  });
-                  const newStringValue = [...stringValues];
-                  newStringValue[newStringValue.length - 1] = e.target.value;
-                  setStringValues((preStringValues) => {
-                    const newStringValue = [...preStringValues];
-                    newStringValue[newStringValue.length - 1] = e.target.value;
-                    return newStringValue;
-                  });
-                  if (!submitValue) return;
-                  const filteredArray = newStringValue.filter(
-                    (item, index) => item !== '' && newValues[index] == true
-                  ); // Filter out empty strings
-                  const resultString = JSON.stringify(filteredArray); // Convert the array to string format
-                  const valid = CheckboxFieldFormElement.validate(
-                    element,
-                    resultString
-                  );
-                  setError(!valid);
-                  submitValue(element.id, resultString);
-                }}
+      <RadioGroup
+        value={value}
+        onValueChange={(value) => {
+          setValue(value);
+          if (!submitValue) return;
+          const valid = RadioFieldFormElement.validate(element, value);
+          setError(!valid);
+          console.log(value);
+          submitValue(element.id, value);
+        }}
+      >
+        {options.map((option, index) => {
+          return (
+            <div
+              key={`${element.id}-${index}-div`}
+              className="gap-1.5 flex h-9 items-center"
+            >
+              <RadioGroupItem
+                value={option == 'input-other' ? selectedValue : option}
+                id={`${element.id}-${index}`}
+                key={`${element.id}-${index}-checkbox`}
               />
-            ) : (
-              <Label
-                htmlFor={`${element.id}-${index}`}
-                key={`${element.id}-${index}-label`}
-                className={cn(error && 'text-red-500')}
-              >
-                {option}
-              </Label>
-            )}
-            <hr key={`${element.id}-${index}-hr`} />
-          </div>
-        );
-      })}
+              {option == 'input-other' && index == options.length - 1 ? (
+                <Input
+                  key={`${element.id}-${index}-label`}
+                  type="text"
+                  placeholder="Other..."
+                  className={`${cn(
+                    error && 'text-red-500 border-b-red-500'
+                  )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
+                  onChange={(e) => {
+                    setSelectedValue(e.target.value); // Cập nhật giá trị radio với giá trị của Input
+                    setValue(e.target.value);
+                    if (!submitValue) return;
+                    const valid = RadioFieldFormElement.validate(
+                      element,
+                      e.target.value
+                    );
+                    setError(!valid);
+                    submitValue(element.id, e.target.value);
+                  }}
+                />
+              ) : (
+                <Label
+                  htmlFor={`${element.id}-${index}`}
+                  key={`${element.id}-${index}-label`}
+                  className={cn(error && 'text-red-500')}
+                >
+                  {option}
+                </Label>
+              )}
+              <hr key={`${element.id}-${index}-hr`} />
+            </div>
+          );
+        })}
+      </RadioGroup>
       {helperText && (
         <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
       )}

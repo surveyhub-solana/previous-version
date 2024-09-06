@@ -24,3 +24,6 @@ export interface IFormSubmission {
   created_at: number;
   content: string;
 }
+export interface IFormSubmissionWithId extends IFormSubmission {
+  _id: string;
+}

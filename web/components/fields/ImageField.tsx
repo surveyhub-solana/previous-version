@@ -72,15 +72,10 @@ function DesignerComponent({
   const { url, description } = element.extraAttributes;
   return (
     <div className="flex flex-col gap-2 w-full">
-      <div>
-        <Label className="text-muted-foreground">
-          Image URL(Please click on Preview to view the image):
-        </Label>
-        <Input value={url} readOnly disabled />
+      <div className="w-full flex items-center justify-center">
+        <img src={url} className="w-2/3" alt="" />
       </div>
-      <div className="w-full truncate whitespace-pre-line line-clamp-1">
-        {description}
-      </div>
+      <div className="w-full  ">{description}</div>
     </div>
   );
 }

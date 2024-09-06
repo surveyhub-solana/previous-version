@@ -210,6 +210,7 @@ function SubmissionsTable({
           case 'SelectField':
           case 'CheckboxField':
           case 'ImageField':
+          case 'RadioField':
             setColumns((prevColumns) => [
               ...prevColumns,
               {
@@ -228,6 +229,7 @@ function SubmissionsTable({
       submissions.forEach((submission: IFormSubmission) => {
         // blockchain : FormSubmissions
         const content = JSON.parse(submission.content);
+        console.log(content);
         setRows((prevRows) => [
           ...prevRows,
           {
@@ -292,11 +294,10 @@ function RowCell({ type, value }: { type: ElementsType; value: string }) {
       node = <Badge variant={'outline'}>{format(date, 'dd/MM/yyyy')}</Badge>;
       break;
     }
-    case 'CheckboxField': {
-      const checked = value === 'true';
-      node = <Checkbox checked={checked} disabled />;
-      break;
-    }
+    // case 'CheckboxField': {
+    //   const checked = value === 'true';
+    //   node = <Checkbox checked={checked} disabled />;
+    // }
   }
 
   return <TableCell>{node}</TableCell>;

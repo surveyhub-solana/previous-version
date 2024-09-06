@@ -1,7 +1,13 @@
 'use server';
 
 import { getDatabase } from '@/lib/mongodb';
-import { IForm, IFormWithId, FormStats, IFormSubmission } from '@/lib/type';
+import {
+  IForm,
+  IFormWithId,
+  FormStats,
+  IFormSubmission,
+  IFormSubmissionWithId,
+} from '@/lib/type';
 import crypto from 'crypto';
 import {
   FindOneAndUpdateOptions,
@@ -247,7 +253,7 @@ export async function getForm(
     let form: WithId<IForm> | null;
     if (existingSubmission) {
       // If a submission from this author already exists, return false
-      return true
+      return true;
     } else {
       form = await formsCollection.findOneAndUpdate(
         { _id: new ObjectId(id), published: true },
@@ -485,7 +491,7 @@ export async function submitForm(
 export async function getFormWithSubmissions(
   id: string,
   ownerPubkey: string
-): Promise<{ form: IFormWithId; submissions: IFormSubmission[] } | null> {
+): Promise<{ form: IFormWithId; submissions: IFormSubmissionWithId[] } | null> {
   try {
     // Validate input parameters
     if (!id || typeof id !== 'string' || !ObjectId.isValid(id)) {
@@ -524,7 +530,10 @@ export async function getFormWithSubmissions(
     // Return the form with _id as a string and the related submissions
     return {
       form: { ...form, _id: form._id.toString() },
-      submissions,
+      submissions: submissions.map((submission) => ({
+        ...submission,
+        _id: submission._id.toString(), // Chuyển đổi _id của từng submission thành chuỗi
+      })),
     };
   } catch (error) {
     console.error('Error retrieving form and submissions:', error);
