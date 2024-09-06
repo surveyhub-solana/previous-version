@@ -192,8 +192,8 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
             to edit this form. <br />
             <br />
             <span className="font-medium">
-              Before making the project public, add a reward for those who
-              provide you with information
+              By publishing this form you will make it available to the public
+              and you will be able to collect submissions.
             </span>
           </AlertDialogDescription>
 
