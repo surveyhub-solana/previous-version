@@ -1,29 +1,42 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { ElementsType, FormElement, FormElementInstance, SubmitFunction } from "../FormElements";
-import useDesigner from "../hooks/useDesigner";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import {
+  ElementsType,
+  FormElement,
+  FormElementInstance,
+  SubmitFunction,
+} from '../FormElements';
+import useDesigner from '../hooks/useDesigner';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { BsFillCalendarDateFill } from "react-icons/bs";
-import { Button } from "../ui/button";
-import { Calendar } from "../ui/calendar";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Switch } from "../ui/switch";
+import { cn } from '@/lib/utils';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { BsFillCalendarDateFill } from 'react-icons/bs';
+import { Button } from '../ui/button';
+import { Calendar } from '../ui/calendar';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Switch } from '../ui/switch';
 
-const type: ElementsType = "DateField";
+const type: ElementsType = 'DateField';
 
 const extraAttributes = {
-  label: "Date field",
-  helperText: "Pick a date",
+  label: 'Date field',
+  helperText: 'Pick a date',
   required: false,
 };
 
@@ -42,13 +55,17 @@ export const DateFieldFormElement: FormElement = {
   }),
   designerBtnElement: {
     icon: BsFillCalendarDateFill,
-    label: "Date Field",
+    label: 'Date Field',
   },
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
+  answerComponent: AnswerComponent,
 
-  validate: (formElement: FormElementInstance, currentValue: string): boolean => {
+  validate: (
+    formElement: FormElementInstance,
+    currentValue: string
+  ): boolean => {
     const element = formElement as CustomInstance;
     if (element.extraAttributes.required) {
       return currentValue.length > 0;
@@ -62,7 +79,11 @@ type CustomInstance = FormElementInstance & {
   extraAttributes: typeof extraAttributes;
 };
 
-function DesignerComponent({ elementInstance }: { elementInstance: FormElementInstance }) {
+function DesignerComponent({
+  elementInstance,
+}: {
+  elementInstance: FormElementInstance;
+}) {
   const element = elementInstance as CustomInstance;
   const { label, required, placeHolder, helperText } = element.extraAttributes;
   return (
@@ -98,7 +119,9 @@ function FormComponent({
 }) {
   const element = elementInstance as CustomInstance;
 
-  const [date, setDate] = useState<Date | undefined>(defaultValue ? new Date(defaultValue) : undefined);
+  const [date, setDate] = useState<Date | undefined>(
+    defaultValue ? new Date(defaultValue) : undefined
+  );
 
   const [error, setError] = useState(false);
 
@@ -157,13 +180,71 @@ function FormComponent({
   );
 }
 
+function AnswerComponent({
+  elementInstance,
+  answers,
+}: {
+  elementInstance: FormElementInstance;
+  answers?: string[];
+}) {
+  const element = elementInstance as CustomInstance;
+
+  const [date, setDate] = useState<Date | undefined>(
+    answers != undefined && answers.length != 0 ? new Date(answers[0]) : undefined
+  );
+
+  const { label, required, placeHolder, helperText } = element.extraAttributes;
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <Label className={`leading-relaxed`}>
+        {label}
+        {required && '*'}
+      </Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={'outline'}
+            className={cn(
+              'w-full justify-start text-left font-normal',
+              !date && 'text-muted-foreground',
+            )}
+            disabled
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, 'PPP') : <span>Pick a date</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+          />
+        </PopoverContent>
+      </Popover>
+      {helperText && (
+        <p
+          className={cn(
+            'text-muted-foreground text-[0.8rem]'
+          )}
+        >
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}
+
 type propertiesFormSchemaType = z.infer<typeof propertiesSchema>;
-function PropertiesComponent({ elementInstance }: { elementInstance: FormElementInstance }) {
+function PropertiesComponent({
+  elementInstance,
+}: {
+  elementInstance: FormElementInstance;
+}) {
   const element = elementInstance as CustomInstance;
   const { updateElement } = useDesigner();
   const form = useForm<propertiesFormSchemaType>({
     resolver: zodResolver(propertiesSchema),
-    mode: "onBlur",
+    mode: 'onBlur',
     defaultValues: {
       label: element.extraAttributes.label,
       helperText: element.extraAttributes.helperText,
@@ -206,12 +287,13 @@ function PropertiesComponent({ elementInstance }: { elementInstance: FormElement
                 <Input
                   {...field}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") e.currentTarget.blur();
+                    if (e.key === 'Enter') e.currentTarget.blur();
                   }}
                 />
               </FormControl>
               <FormDescription>
-                The label of the field. <br /> It will be displayed above the field
+                The label of the field. <br /> It will be displayed above the
+                field
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -227,7 +309,7 @@ function PropertiesComponent({ elementInstance }: { elementInstance: FormElement
                 <Input
                   {...field}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") e.currentTarget.blur();
+                    if (e.key === 'Enter') e.currentTarget.blur();
                   }}
                 />
               </FormControl>
@@ -252,7 +334,10 @@ function PropertiesComponent({ elementInstance }: { elementInstance: FormElement
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

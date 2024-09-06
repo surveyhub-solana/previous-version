@@ -63,6 +63,7 @@ export const RadioFieldFormElement: FormElement = {
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
+  answerComponent: AnswerComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -189,31 +190,103 @@ function FormComponent({
                 key={`${element.id}-${index}-checkbox`}
               />
               {option == 'input-other' && index == options.length - 1 ? (
-                <Input
-                  key={`${element.id}-${index}-label`}
-                  type="text"
-                  placeholder="Other..."
-                  className={`${cn(
-                    error && 'text-red-500 border-b-red-500'
-                  )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
-                  onChange={(e) => {
-                    setSelectedValue(e.target.value); // Cập nhật giá trị radio với giá trị của Input
-                    setValue(e.target.value);
-                    if (!submitValue) return;
-                    const valid = RadioFieldFormElement.validate(
-                      element,
-                      e.target.value
-                    );
-                    setError(!valid);
-                    submitValue(element.id, e.target.value);
-                  }}
-                />
+                <>
+                  <Label key={`${element.id}-${index}-label`}>Other</Label>
+                  <Input
+                    key={`${element.id}-${index}-input`}
+                    type="text"
+                    placeholder="Other..."
+                    className={`${cn(
+                      error && 'text-red-500 border-b-red-500'
+                    )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
+                    onChange={(e) => {
+                      setSelectedValue(e.target.value); // Cập nhật giá trị radio với giá trị của Input
+                      setValue(e.target.value);
+                      if (!submitValue) return;
+                      const valid = RadioFieldFormElement.validate(
+                        element,
+                        e.target.value
+                      );
+                      setError(!valid);
+                      submitValue(element.id, e.target.value);
+                    }}
+                  />
+                </>
               ) : (
                 <Label
                   htmlFor={`${element.id}-${index}`}
                   key={`${element.id}-${index}-label`}
                   className={cn(error && 'text-red-500')}
                   onClick={() => setValue(option)}
+                >
+                  {option}
+                </Label>
+              )}
+              <hr key={`${element.id}-${index}-hr`} />
+            </div>
+          );
+        })}
+      </RadioGroup>
+      {helperText && (
+        <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
+      )}
+    </div>
+  );
+}
+
+function AnswerComponent({
+  elementInstance,
+  answers,
+}: {
+  elementInstance: FormElementInstance;
+  answers?: string[];
+}) {
+  const element = elementInstance as CustomInstance;
+  const { label, required, helperText, options } = element.extraAttributes;
+  const [value, setValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState(''); // Quản lý giá trị radio được chọn
+  if (answers != undefined) {
+    if (options.includes(answers[0])) {
+      setValue(answers[0]);
+    } else {
+      setSelectedValue(answers[0]);
+      setValue(answers[0]);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-top">
+      <Label className={`leading-relaxed`}>
+        {label}
+        {required && '*'}
+      </Label>
+      <RadioGroup value={value} aria-readonly className="gap-0">
+        {options.map((option, index) => {
+          return (
+            <div
+              key={`${element.id}-${index}-div`}
+              className="gap-1.5 flex h-9 items-center"
+            >
+              <RadioGroupItem
+                value={option == 'input-other' ? selectedValue : option}
+                id={`${element.id}-${index}`}
+                key={`${element.id}-${index}-checkbox`}
+              />
+              {option == 'input-other' && index == options.length - 1 ? (
+                <>
+                  <Label key={`${element.id}-${index}-label`}>Other</Label>
+                  <Input
+                    key={`${element.id}-${index}-input`}
+                    type="text"
+                    placeholder="Other..."
+                    className={`border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
+                    value={selectedValue}
+                  />
+                </>
+              ) : (
+                <Label
+                  htmlFor={`${element.id}-${index}`}
+                  key={`${element.id}-${index}-label`}
                 >
                   {option}
                 </Label>

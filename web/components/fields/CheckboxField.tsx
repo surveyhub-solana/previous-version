@@ -62,6 +62,7 @@ export const CheckboxFieldFormElement: FormElement = {
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
+  answerComponent: AnswerComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -222,41 +223,45 @@ function FormComponent({
               }}
             />
             {option == 'input-other' && index == options.length - 1 ? (
-              <Input
-                key={`${element.id}-${index}-label`}
-                type="text"
-                placeholder="Other..."
-                className={`${cn(
-                  error && 'text-red-500 border-b-red-500'
-                )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
-                onChange={(e) => {
-                  const newValues = [...values];
-                  newValues[index] = true; // do useState không diễn ra ngay lập tức mà lập lịch render nên nếu dùng dữ liệu luôn sẽ là data cũ
-                  setValues((prevValues) => {
-                    const newValues = [...prevValues]; // Create a copy of the current array
-                    newValues[index] = true; // Update the value at the specified index (you can set it to true/false or toggle it)
-                    return newValues; // Return the updated array
-                  });
-                  const newStringValue = [...stringValues];
-                  newStringValue[newStringValue.length - 1] = e.target.value;
-                  setStringValues((preStringValues) => {
-                    const newStringValue = [...preStringValues];
+              <>
+                <Label key={`${element.id}-${index}-label`}>Other</Label>
+                <Input
+                  key={`${element.id}-${index}-input`}
+                  type="text"
+                  placeholder="Value..."
+                  className={`${cn(
+                    error && 'text-red-500 border-b-red-500'
+                  )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
+                  onChange={(e) => {
+                    const newValues = [...values];
+                    newValues[index] = true; // do useState không diễn ra ngay lập tức mà lập lịch render nên nếu dùng dữ liệu luôn sẽ là data cũ
+                    setValues((prevValues) => {
+                      const newValues = [...prevValues]; // Create a copy of the current array
+                      newValues[index] = true; // Update the value at the specified index (you can set it to true/false or toggle it)
+                      return newValues; // Return the updated array
+                    });
+                    const newStringValue = [...stringValues];
                     newStringValue[newStringValue.length - 1] = e.target.value;
-                    return newStringValue;
-                  });
-                  if (!submitValue) return;
-                  const filteredArray = newStringValue.filter(
-                    (item, index) => item !== '' && newValues[index] == true
-                  ); // Filter out empty strings
-                  const resultString = JSON.stringify(filteredArray); // Convert the array to string format
-                  const valid = CheckboxFieldFormElement.validate(
-                    element,
-                    resultString
-                  );
-                  setError(!valid);
-                  submitValue(element.id, resultString);
-                }}
-              />
+                    setStringValues((preStringValues) => {
+                      const newStringValue = [...preStringValues];
+                      newStringValue[newStringValue.length - 1] =
+                        e.target.value;
+                      return newStringValue;
+                    });
+                    if (!submitValue) return;
+                    const filteredArray = newStringValue.filter(
+                      (item, index) => item !== '' && newValues[index] == true
+                    ); // Filter out empty strings
+                    const resultString = JSON.stringify(filteredArray); // Convert the array to string format
+                    const valid = CheckboxFieldFormElement.validate(
+                      element,
+                      resultString
+                    );
+                    setError(!valid);
+                    submitValue(element.id, resultString);
+                  }}
+                />
+              </>
             ) : (
               <Label
                 htmlFor={`${element.id}-${index}`}
@@ -270,6 +275,81 @@ function FormComponent({
                     newValues[index] = !newValues[index]; // Update the value at the specified index (you can set it to true/false or toggle it)
                     return newValues; // Return the updated array
                   })
+                }
+              >
+                {option}
+              </Label>
+            )}
+            <hr key={`${element.id}-${index}-hr`} />
+          </div>
+        );
+      })}
+      {helperText && (
+        <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
+      )}
+    </div>
+  );
+}
+function AnswerComponent({
+  elementInstance,
+  answers,
+}: {
+  elementInstance: FormElementInstance;
+  answers?: string[];
+}) {
+  const element = elementInstance as CustomInstance;
+  const { label, required, helperText, options } = element.extraAttributes;
+  const [values, setValues] = useState<boolean[]>(() => {
+    const newValues = Array(options.length).fill(false);
+    if (!answers || answers.length == 0) return [...newValues];
+    if (
+      options[options.length - 1] == 'input-other' &&
+      !options.includes(answers[answers.length - 1])
+    )
+      newValues[options.length - 1] = true;
+    answers.forEach((answer, index) => {
+      if (options.includes(answer)) {
+        newValues[options.findIndex((option) => option === answer)] = true;
+      }
+    });
+    return [...newValues];
+  });
+
+  return (
+    <div className="flex flex-col items-top">
+      <Label className={`leading-relaxed`}>
+        {label}
+        {required && '*'}
+      </Label>
+      {options.map((option, index) => {
+        return (
+          <div
+            key={`${element.id}-${index}-div`}
+            className="gap-1.5 flex h-9 items-center"
+          >
+            <Checkbox
+              id={`${element.id}-${index}`}
+              key={`${element.id}-${index}-checkbox`}
+              checked={values[index]}
+              aria-readonly
+            />
+            {option == 'input-other' && index == options.length - 1 ? (
+              <>
+                <Label key={`${element.id}-${index}-label`}>Other</Label>
+                <Input
+                  key={`${element.id}-${index}-input`}
+                  type="text"
+                  placeholder="Value..."
+                  className={`border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
+                  value={values[index] && answers ? answers[answers.length - 1] : ''}
+                />
+              </>
+            ) : (
+              <Label
+                htmlFor={`${element.id}-${index}`}
+                key={`${element.id}-${index}-label`}
+                className={
+                  'peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                 }
               >
                 {option}

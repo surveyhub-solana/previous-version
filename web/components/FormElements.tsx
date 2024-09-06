@@ -51,6 +51,10 @@ export type FormElement = {
   propertiesComponent: React.FC<{
     elementInstance: FormElementInstance;
   }>;
+  answerComponent: React.FC<{
+    elementInstance: FormElementInstance;
+    answers?: string[]
+  }>;
 
   validate: (formElement: FormElementInstance, currentValue: string) => boolean;
 };

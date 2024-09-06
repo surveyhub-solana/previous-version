@@ -8,6 +8,7 @@ import { FaWpforms } from 'react-icons/fa';
 import { HiCursorClick } from 'react-icons/hi';
 import { TbArrowBounce } from 'react-icons/tb';
 import { ElementsType, FormElementInstance } from '@/components/FormElements';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -32,8 +33,14 @@ import {
 } from '@/action/form';
 import { Form, FormSubmissions } from '@/app/services/type';
 import BN from 'bn.js';
-import { IFormSubmission, IFormWithId } from '@/lib/type';
+import {
+  IFormSubmission,
+  IFormSubmissionWithId,
+  IFormWithId,
+} from '@/lib/type';
 import Readme from '@/components/Readme';
+import Statistics from '@/components/data/Statistics';
+import Answers from '@/components/data/Answers';
 
 export default function FormDetailPage({
   params,
@@ -186,8 +193,8 @@ function SubmissionsTable({
   publicKey: string;
   id: string;
 }) {
-  const [columns, setColumns] = useState<Column[]>([]);
-  const [rows, setRows] = useState<Row[]>([]);
+  const [form, setForm] = useState<IFormWithId>();
+  const [submissions, setSubmissions] = useState<IFormSubmissionWithId[]>([]);
   useEffect(() => {
     async function fetchSubmissions() {
       const fetchedFormWithSubmissions = await getFormWithSubmissions(
@@ -195,110 +202,137 @@ function SubmissionsTable({
         publicKey
       );
       if (!fetchedFormWithSubmissions) throw new Error('form not found');
-      const { form, submissions } = fetchedFormWithSubmissions;
-      setColumns([]);
-      setRows([]);
+      const result = fetchedFormWithSubmissions;
+      if (result) {
+        setForm(result.form);
+        setSubmissions(result.submissions);
+      }
+      if (!result) return;
 
-      const formElements = JSON.parse(form.content) as FormElementInstance[];
+      // const formElements = JSON.parse(form.content) as FormElementInstance[];
 
-      formElements.forEach((element) => {
-        switch (element.type) {
-          case 'TextField':
-          case 'NumberField':
-          case 'TextAreaField':
-          case 'DateField':
-          case 'SelectField':
-          case 'CheckboxField':
-          case 'ImageField':
-          case 'RadioField':
-            setColumns((prevColumns) => [
-              ...prevColumns,
-              {
-                id: element.id,
-                label: element.extraAttributes?.label,
-                required: element.extraAttributes?.required,
-                type: element.type,
-              },
-            ]);
-            break;
-          default:
-            break;
-        }
-      });
+      // formElements.forEach((element) => {
+      //   switch (element.type) {
+      //     case 'TextField':
+      //     case 'NumberField':
+      //     case 'TextAreaField':
+      //     case 'DateField':
+      //     case 'SelectField':
+      //     case 'CheckboxField':
+      //     case 'RadioField':
+      //       setColumns((prevColumns) => [
+      //         ...prevColumns,
+      //         {
+      //           id: element.id,
+      //           label: element.extraAttributes?.label,
+      //           required: element.extraAttributes?.required,
+      //           type: element.type,
+      //         },
+      //       ]);
+      //       break;
+      //     default:
+      //       break;
+      //   }
+      // });
 
-      submissions.forEach((submission: IFormSubmission) => {
-        // blockchain : FormSubmissions
-        const content = JSON.parse(submission.content);
-        console.log(content);
-        setRows((prevRows) => [
-          ...prevRows,
-          {
-            ...content,
-            // submittedAt: parseInt(submission.createdAt, 16) * 1000, // blockchain
-            submittedAt: submission.created_at,
-          },
-        ]);
-      });
+      // submissions.forEach((submission: IFormSubmission) => {
+      //   // blockchain : FormSubmissions
+      //   const content = JSON.parse(submission.content);
+      //   console.log(content);
+      //   setRows((prevRows) => [
+      //     ...prevRows,
+      //     {
+      //       wallet: submission.author,
+      //       ...content,
+      //       // submittedAt: parseInt(submission.createdAt, 16) * 1000, // blockchain
+      //       submittedAt: submission.created_at,
+      //     },
+      //   ]);
+      // });
     }
     fetchSubmissions();
   }, [publicKey, id]);
-
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-4">Submissions</h1>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((column) => (
-                <TableHead key={column.id} className="uppercase">
-                  {column.label}
-                </TableHead>
-              ))}
-              <TableHead className="text-muted-foreground text-right uppercase">
-                Submitted at
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row, index) => (
-              <TableRow key={index}>
-                {columns.map((column) => (
-                  <RowCell
-                    key={column.id}
-                    type={column.type}
-                    value={row[column.id]}
-                  />
-                ))}
-                <TableCell className="text-muted-foreground text-right">
-                  {formatDistance(row.submittedAt, new Date(), {
-                    addSuffix: true,
-                  })}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+    form && (
+      <Tabs defaultValue="statistics" className="w-full py-5">
+        <TabsList className="grid w-[400px] grid-cols-2 rounded-[0.5rem]">
+          <TabsTrigger value="statistics" className="rounded-[0.5rem]">
+            Statistics
+          </TabsTrigger>
+          <TabsTrigger value="answer" className="rounded-[0.5rem]">
+            Answers
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="statistics" className="w-full min-h-screen">
+          <Statistics />
+        </TabsContent>
+        <TabsContent value="answer" className="w-full min-h-screen">
+          <Answers form={form} submissions={submissions} />
+        </TabsContent>
+      </Tabs>
+    )
   );
+
+  // return (
+  //   <>
+  //     <h1 className="text-2xl font-bold mb-4">Submissions</h1>
+  //     <div className="rounded-md border">
+  //       <Table className="w-max">
+  //         <TableHeader>
+  //           <TableRow>
+  //             <TableHead className="uppercase max-w-[300px]">
+  //               Wallet Address
+  //             </TableHead>
+  //             {columns.map((column) => (
+  //               <TableHead key={column.id} className="uppercase max-w-[300px]">
+  //                 {column.label}
+  //               </TableHead>
+  //             ))}
+  //             <TableHead className="text-muted-foreground text-right uppercase">
+  //               Submitted at
+  //             </TableHead>
+  //           </TableRow>
+  //         </TableHeader>
+  //         <TableBody>
+  //           {rows.map((row, index) => (
+  //             <TableRow key={index}>
+  //               <TableCell>{row['wallet']}</TableCell>
+  //               {columns.map((column) => (
+  //                 <RowCell
+  //                   key={column.id}
+  //                   type={column.type}
+  //                   value={row[column.id]}
+  //                 />
+  //               ))}
+  //               <TableCell className="text-muted-foreground text-right">
+  //                 {formatDistance(row.submittedAt, new Date(), {
+  //                   addSuffix: true,
+  //                 })}
+  //               </TableCell>
+  //             </TableRow>
+  //           ))}
+  //         </TableBody>
+  //       </Table>
+  //     </div>
+  //   </>
+  // );
 }
 
-function RowCell({ type, value }: { type: ElementsType; value: string }) {
-  let node: ReactNode = value;
+// function RowCell({ type, value }: { type: ElementsType; value: string }) {
+//   let node: ReactNode = value;
 
-  switch (type) {
-    case 'DateField': {
-      if (!value) break;
-      const date = new Date(value);
-      node = <Badge variant={'outline'}>{format(date, 'dd/MM/yyyy')}</Badge>;
-      break;
-    }
-    // case 'CheckboxField': {
-    //   const checked = value === 'true';
-    //   node = <Checkbox checked={checked} disabled />;
-    // }
-  }
+//   switch (type) {
+//     case 'DateField': {
+//       if (!value) break;
+//       const date = new Date(value);
+//       node = <Badge variant={'outline'}>{format(date, 'dd/MM/yyyy')}</Badge>;
+//       break;
+//     }
+//     // case 'CheckboxField': {
+//     //   const checked = value === 'true';
+//     //   node = <Checkbox checked={checked} disabled />;
+//     // }
+//   }
 
-  return <TableCell>{node}</TableCell>;
-}
+//   return <TableCell className=" max-w-[300px]">{node}</TableCell>;
+// }

@@ -70,6 +70,7 @@ export const SelectFieldFormElement: FormElement = {
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
+  answerComponent: AnswerComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -169,6 +170,46 @@ function FormComponent({
             error && 'text-red-500'
           )}
         >
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function AnswerComponent({
+  elementInstance,
+  answers,
+}: {
+  elementInstance: FormElementInstance;
+  answers?: string[];
+}) {
+  const element = elementInstance as CustomInstance;
+
+  const [value, setValue] = useState(answers == null ? '' : answers[0] || '');
+
+  const { label, required, placeHolder, helperText, options } =
+    element.extraAttributes;
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <Label className={`leading-relaxed`}>
+        {label}
+        {required && '*'}
+      </Label>
+      <Select value={value}>
+        <SelectTrigger className={cn('w-full')}>
+          <SelectValue placeholder={placeHolder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {helperText && (
+        <p className={cn('text-muted-foreground text-[0.8rem]')}>
           {helperText}
         </p>
       )}

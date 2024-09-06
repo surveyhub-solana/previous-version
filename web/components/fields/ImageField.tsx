@@ -20,15 +20,18 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { IoIosImages } from 'react-icons/io';
 import { Textarea } from '../ui/textarea';
+import { Slider } from '../ui/slider';
 
 const type: ElementsType = 'ImageField';
 const extraAttributes = {
   url: 'https://surveyhub.tech/favicon.ico',
   description: 'SurveyHub',
+  width: 80,
 };
 const propertiesSchema = z.object({
   url: z.string().url('Image must be a valid URL.'),
   description: z.string().max(2000),
+  width: z.number().min(0).max(100),
 });
 
 export const ImageFieldFormElement: FormElement = {
@@ -45,6 +48,7 @@ export const ImageFieldFormElement: FormElement = {
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
+  answerComponent: FormComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -69,11 +73,11 @@ function DesignerComponent({
   elementInstance: FormElementInstance;
 }) {
   const element = elementInstance as CustomInstance;
-  const { url, description } = element.extraAttributes;
+  const { url, description, width } = element.extraAttributes;
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="w-full flex items-center justify-center">
-        <img src={url} className="w-2/3" alt="" />
+        <img src={url} className={`w-[${width}%]`} alt="" />
       </div>
       <div className="w-full  ">{description}</div>
     </div>
@@ -85,11 +89,11 @@ function FormComponent({
   elementInstance: FormElementInstance;
 }) {
   const element = elementInstance as CustomInstance;
-  const { url, description } = element.extraAttributes;
+  const { url, description, width } = element.extraAttributes;
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className="w-full flex items-center justify-center">
-        <img src={url} className="w-2/3" alt="" />
+        <img src={url} className={`w-[${width}%]`} alt="" />
       </div>
       <div className="w-full whitespace-pre-line">{description}</div>
     </div>
@@ -111,6 +115,7 @@ function PropertiesComponent({
     defaultValues: {
       url: element.extraAttributes.url,
       description: element.extraAttributes.description,
+      width: element.extraAttributes.width,
     },
   });
 
@@ -119,12 +124,13 @@ function PropertiesComponent({
   }, [element, form]);
 
   function applyChanges(values: propertiesFormSchemaType) {
-    const { url, description } = values;
+    const { url, description, width } = values;
     updateElement(element.id, {
       ...element,
       extraAttributes: {
         url,
         description,
+        width,
       },
     });
   }
@@ -164,7 +170,7 @@ function PropertiesComponent({
               <FormLabel>Description for Image:</FormLabel>
               <FormControl>
                 <Textarea
-                  rows={19}
+                  rows={10}
                   placeholder={'Description for Image...'}
                   onChange={(e) => {
                     console.log(field.value.toString());
@@ -174,6 +180,27 @@ function PropertiesComponent({
                   //     if (e.key === 'Enter') e.currentTarget.blur();
                   //   }}
                   defaultValue={field.value}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="width"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Width (px): {form.watch('width')}</FormLabel>
+              <FormControl className="pt-2">
+                <Slider
+                  defaultValue={[field.value]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={(value) => {
+                    field.onChange(value[0]);
+                  }}
                 />
               </FormControl>
               <FormMessage />

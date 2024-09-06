@@ -36,6 +36,7 @@ export const SpacerFieldFormElement: FormElement = {
   designerComponent: DesignerComponent,
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
+  answerComponent: FormComponent,
 
   validate: () => true,
 };
