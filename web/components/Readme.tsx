@@ -12,7 +12,7 @@ export default function Readme() {
       <div className="h-fit w-[80%] md:w-[60%]">
         <div className="flex-none">
           <div className="text-2xl font-bold">
-            Getting Started with SurveyHub
+            Getting Started with SurveyHub (You are not logged in)
           </div>
           <div className="text-muted-foreground font-semibold py-2 w-full border-b-2">
             Welcome to SurveyHub, an online survey platform powered by
