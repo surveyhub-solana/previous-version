@@ -101,7 +101,7 @@ function DesignerComponent({
   const { label, required, helperText, options } = element.extraAttributes;
   return (
     <div className="flex flex-col items-top">
-      <Label>
+      <Label className="leading-relaxed">
         {label}
         {required && '*'}
       </Label>
@@ -184,7 +184,7 @@ function FormComponent({
 
   return (
     <div className="flex flex-col items-top">
-      <Label>
+      <Label className={`${cn(error && 'text-red-500')} leading-relaxed`}>
         {label}
         {required && '*'}
       </Label>
@@ -261,7 +261,16 @@ function FormComponent({
               <Label
                 htmlFor={`${element.id}-${index}`}
                 key={`${element.id}-${index}-label`}
-                className={cn(error && 'text-red-500')}
+                className={
+                  'peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                }
+                onClick={() =>
+                  setValues((prevValues) => {
+                    const newValues = [...prevValues]; // Create a copy of the current array
+                    newValues[index] = !newValues[index]; // Update the value at the specified index (you can set it to true/false or toggle it)
+                    return newValues; // Return the updated array
+                  })
+                }
               >
                 {option}
               </Label>

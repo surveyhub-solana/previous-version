@@ -148,7 +148,7 @@ function FormCard({
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 justify-between">
+        <CardTitle className="flex items-center gap-2 justify-between text-base">
           <span className="truncate font-bold">{form.name}</span>
           {form.published && (
             <span className="flex items-center gap-2">

@@ -95,7 +95,7 @@ function DesignerComponent({
   const { label, required, helperText, options } = element.extraAttributes;
   return (
     <div className="flex flex-col items-top">
-      <Label>
+      <Label className="leading-relaxed">
         {label}
         {required && '*'}
       </Label>
@@ -161,7 +161,7 @@ function FormComponent({
 
   return (
     <div className="flex flex-col items-top">
-      <Label>
+      <Label className={`${cn(error && 'text-red-500')} leading-relaxed`}>
         {label}
         {required && '*'}
       </Label>
@@ -175,6 +175,7 @@ function FormComponent({
           console.log(value);
           submitValue(element.id, value);
         }}
+        className="gap-0"
       >
         {options.map((option, index) => {
           return (
@@ -212,6 +213,7 @@ function FormComponent({
                   htmlFor={`${element.id}-${index}`}
                   key={`${element.id}-${index}-label`}
                   className={cn(error && 'text-red-500')}
+                  onClick={() => setValue(option)}
                 >
                   {option}
                 </Label>

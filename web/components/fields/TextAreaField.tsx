@@ -68,12 +68,14 @@ function DesignerComponent({ elementInstance }: { elementInstance: FormElementIn
   const { label, required, placeHolder, helperText, rows } = element.extraAttributes;
   return (
     <div className="flex flex-col gap-2 w-full">
-      <Label>
+      <Label className="leading-relaxed">
         {label}
-        {required && "*"}
+        {required && '*'}
       </Label>
       <Textarea readOnly disabled placeholder={placeHolder} />
-      {helperText && <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>}
+      {helperText && (
+        <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
+      )}
     </div>
   );
 }

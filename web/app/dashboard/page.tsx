@@ -51,7 +51,7 @@ export default function Home() {
       <Separator className="my-6" />
       <h2 className="text-4xl font-bold col-span-2">Your forms</h2>
       <Separator className="my-6" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
         <CreateFormBtn />
         <Suspense
           fallback={
@@ -315,7 +315,7 @@ function FormCard({
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 justify-between">
+        <CardTitle className="flex items-center gap-2 justify-between text-base">
           <span className="truncate font-bold">{form.name}</span>
           {form.published ? (
             <Badge>Published</Badge>
