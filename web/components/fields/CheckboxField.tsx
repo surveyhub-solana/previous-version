@@ -181,10 +181,22 @@ function FormComponent({
 
   // Handle setting string values for 'input-other' if necessary
   useEffect(() => {
-    const defaultValues = JSON.parse(defaultValue || '');
+    let defaultValues = [];
+    // Safely parse defaultValue if it's valid
+    if (defaultValue) {
+      try {
+        defaultValues = JSON.parse(defaultValue);
+      } catch (error) {
+        console.error('Invalid JSON format in defaultValue: ', error);
+      }
+    }
+
+    // Handle the 'input-other' option
     if (
       options[options.length - 1] === 'input-other' &&
-      !options.includes(defaultValues?.[defaultValues.length - 1])
+      !options.includes(defaultValues[defaultValues.length - 1]) &&
+      defaultValues.length > 0 &&
+      defaultValues[defaultValues.length - 1].length > 0
     ) {
       setValues((prevValues) => {
         const newValues = [...prevValues];
@@ -251,38 +263,46 @@ function FormComponent({
                 <Label key={`${element.id}-${index}-label`}>Other</Label>
                 <Input
                   key={`${element.id}-${index}-input`}
-                  value={stringValues[stringValues.length - 1]}
+                  value={stringValues[stringValues.length - 1] || ''}
                   type="text"
                   placeholder="Value..."
                   className={`${cn(
                     error && 'text-red-500 border-b-red-500'
                   )} border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
                   onChange={(e) => {
+                    // Tạo ra bản sao của cả hai mảng values và stringValues
                     const newValues = [...values];
-                    newValues[index] = true; // do useState không diễn ra ngay lập tức mà lập lịch render nên nếu dùng dữ liệu luôn sẽ là data cũ
-                    setValues((prevValues) => {
-                      const newValues = [...prevValues]; // Create a copy of the current array
-                      newValues[index] = true; // Update the value at the specified index (you can set it to true/false or toggle it)
-                      return newValues; // Return the updated array
-                    });
                     const newStringValue = [...stringValues];
+
+                    // Cập nhật giá trị tại vị trí tương ứng
+                    newValues[index] = true;
                     newStringValue[newStringValue.length - 1] = e.target.value;
-                    setStringValues((preStringValues) => {
-                      const newStringValue = [...preStringValues];
-                      newStringValue[newStringValue.length - 1] =
-                        e.target.value;
-                      return newStringValue;
-                    });
+
+                    // Cập nhật trạng thái một lần sau khi các thay đổi đã được thực hiện
+                    setValues(newValues);
+                    setStringValues(newStringValue);
+
+                    // Nếu không có submitValue thì không làm gì tiếp theo
                     if (!submitValue) return;
+
+                    // Lọc các giá trị hợp lệ (không rỗng và có đánh dấu true trong newValues)
                     const filteredArray = newStringValue.filter(
-                      (item, index) => item !== '' && newValues[index] == true
-                    ); // Filter out empty strings
-                    const resultString = JSON.stringify(filteredArray); // Convert the array to string format
+                      (item, index) => item !== '' && newValues[index] === true
+                    );
+
+                    // Chuyển đổi mảng thành chuỗi JSON
+                    const resultString = JSON.stringify(filteredArray);
+
+                    // Kiểm tra tính hợp lệ
                     const valid = CheckboxFieldFormElement.validate(
                       element,
                       resultString
                     );
+
+                    // Cập nhật lỗi nếu không hợp lệ
                     setError(!valid);
+
+                    // Gọi hàm submit
                     submitValue(element.id, resultString);
                   }}
                 />
@@ -291,14 +311,7 @@ function FormComponent({
               <Label
                 htmlFor={`${element.id}-${index}`}
                 key={`${element.id}-${index}-label`}
-                className={`${cn(error && 'text-red-500')}`}
-                onClick={() =>
-                  setValues((prevValues) => {
-                    const newValues = [...prevValues]; // Create a copy of the current array
-                    newValues[index] = !newValues[index]; // Update the value at the specified index (you can set it to true/false or toggle it)
-                    return newValues; // Return the updated array
-                  })
-                }
+                className={`${cn(error && 'text-red-500')} cursor-pointer`}
               >
                 {option}
               </Label>

@@ -220,8 +220,7 @@ function FormComponent({
                 <Label
                   htmlFor={`${element.id}-${index}`}
                   key={`${element.id}-${index}-label`}
-                  className={`${cn(error && 'text-red-500')}`}
-                  onClick={() => setValue(option)}
+                  className={`${cn(error && 'text-red-500')} cursor-pointer`}
                 >
                   {option}
                 </Label>
