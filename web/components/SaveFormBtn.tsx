@@ -11,7 +11,7 @@ import { Connection } from '@solana/web3.js';
 import { DEFAULT_COMMITMENT, NODE_URL } from '@/config/anchor/constants';
 
 function SaveFormBtn({ id }: { id: string }) {
-  const { elements } = useDesigner();
+  const { filterElements } = useDesigner();
   const [loading, startTransition] = useTransition();
   const { publicKey } = useWallet();
   const wallet = useWallet();
@@ -19,7 +19,7 @@ function SaveFormBtn({ id }: { id: string }) {
 
   const updateForm = async () => {
     try {
-      const jsonElements = JSON.stringify(elements);
+      const jsonElements = JSON.stringify(filterElements());
       if (!publicKey) {
         toast({
           title: 'Error',

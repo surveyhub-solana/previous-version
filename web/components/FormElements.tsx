@@ -4,6 +4,7 @@ import { ImageFieldFormElement } from './fields/ImageField';
 import { NumberFieldFormElement } from './fields/NumberField';
 import { ParagprahFieldFormElement } from './fields/ParagraphField';
 import { RadioFieldFormElement } from './fields/RadioField';
+import { SectionFieldFormElement } from './fields/SectionField';
 import { SelectFieldFormElement } from './fields/SelectField';
 import { SeparatorFieldFormElement } from './fields/SeparatorField';
 import { SpacerFieldFormElement } from './fields/SpacerField';
@@ -26,6 +27,7 @@ export type ElementsType =
   | 'CheckboxField'
   | 'ImageField'
   | 'RadioField'
+  | 'SectionField';
 
 export type SubmitFunction = (key: string, value: string) => void;
 
@@ -53,7 +55,7 @@ export type FormElement = {
   }>;
   answerComponent: React.FC<{
     elementInstance: FormElementInstance;
-    answers?: string[]
+    answers?: string[];
   }>;
 
   validate: (formElement: FormElementInstance, currentValue: string) => boolean;
@@ -81,5 +83,27 @@ export const FormElements: FormElementsType = {
   SelectField: SelectFieldFormElement,
   CheckboxField: CheckboxFieldFormElement,
   ImageField: ImageFieldFormElement,
-  RadioField: RadioFieldFormElement
+  RadioField: RadioFieldFormElement,
+  SectionField: SectionFieldFormElement,
+};
+export const LayoutElements = [
+  'TitleField',
+  'SubTitleField',
+  'ParagraphField',
+  'SeparatorField',
+  'SpacerField',
+  'ImageField',
+  'SectionField',
+];
+export const checkValidSection = (
+  elements: FormElementInstance[],
+  index: number
+) => {
+  return elements.slice(0, index).reduce((total, element) => {
+    return (
+      LayoutElements.includes(element.type) &&
+      total &&
+      element.type != 'SectionField'
+    );
+  }, true);
 };
