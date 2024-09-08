@@ -137,31 +137,28 @@ function FormSubmitComponent({
     }
   };
 
-  const validateForm: () => boolean = useCallback(() => {
-    console.log(section);
+  const validateForm: () => boolean = () => {
+    console.log(formValues);
     for (const field of section) {
       const actualValue = formValues.current[field.id] || '';
-      console.log(actualValue);
       const valid = FormElements[field.type].validate(field, actualValue);
       if (!valid) {
-        console.log(valid);
         formErrors.current[field.id] = true;
       } else {
-        if ((formErrors.current[field.id] = true))
+        if (formErrors.current[field.id] == true)
           delete formErrors.current[field.id];
       }
     }
-    console.log(formErrors.current);
     if (Object.keys(formErrors.current).length > 0) {
       return false;
     }
     console.log('done');
     return true;
-  }, [section]);
+  };
 
   const submitValue = useCallback((key: string, value: string) => {
-    console.log(value);
     formValues.current[key] = value;
+    console.log(value);
   }, []);
 
   const submitFormHandle = async () => {

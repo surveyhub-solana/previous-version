@@ -142,17 +142,21 @@ function FormComponent({
   elementInstance,
   submitValue,
   isInvalid,
-  defaultValues,
+  defaultValue,
 }: {
   elementInstance: FormElementInstance;
   submitValue?: SubmitFunction;
   isInvalid?: boolean;
-  defaultValues?: string[];
+  defaultValue?: string;
 }) {
   const element = elementInstance as CustomInstance;
   const { label, required, helperText, options } = element.extraAttributes;
-  const [value, setValue] = useState('');
-  const [selectedValue, setSelectedValue] = useState(''); // Quản lý giá trị radio được chọn
+  const [value, setValue] = useState(defaultValue || 'null');
+  const [selectedValue, setSelectedValue] = useState(() => {
+    if (defaultValue != undefined && !options.includes(defaultValue))
+      return defaultValue;
+    return '';
+  }); // Quản lý giá trị radio được chọn
 
   const [error, setError] = useState(false);
 
@@ -173,7 +177,6 @@ function FormComponent({
           if (!submitValue) return;
           const valid = RadioFieldFormElement.validate(element, value);
           setError(!valid);
-          console.log(value);
           submitValue(element.id, value);
         }}
         className="gap-0"
@@ -194,6 +197,7 @@ function FormComponent({
                   <Label key={`${element.id}-${index}-label`}>Other</Label>
                   <Input
                     key={`${element.id}-${index}-input`}
+                    value={selectedValue}
                     type="text"
                     placeholder="Other..."
                     className={`${cn(
@@ -216,7 +220,7 @@ function FormComponent({
                 <Label
                   htmlFor={`${element.id}-${index}`}
                   key={`${element.id}-${index}-label`}
-                  className={cn(error && 'text-red-500')}
+                  className={`${cn(error && 'text-red-500')}`}
                   onClick={() => setValue(option)}
                 >
                   {option}
@@ -245,14 +249,18 @@ function AnswerComponent({
   const { label, required, helperText, options } = element.extraAttributes;
   const [value, setValue] = useState('');
   const [selectedValue, setSelectedValue] = useState(''); // Quản lý giá trị radio được chọn
-  if (answers != undefined) {
-    if (options.includes(answers[0])) {
-      setValue(answers[0]);
-    } else {
-      setSelectedValue(answers[0]);
-      setValue(answers[0]);
+
+  // Sử dụng useEffect để cập nhật giá trị state sau khi render
+  useEffect(() => {
+    if (answers != undefined && answers.length > 0) {
+      if (options.includes(answers[0])) {
+        setValue(answers[0]);
+      } else {
+        setSelectedValue(answers[0]);
+        setValue(answers[0]);
+      }
     }
-  }
+  }, [answers, options]);
 
   return (
     <div className="flex flex-col items-top">
@@ -268,19 +276,20 @@ function AnswerComponent({
               className="gap-1.5 flex h-9 items-center"
             >
               <RadioGroupItem
-                value={option == 'input-other' ? selectedValue : option}
+                value={option === 'input-other' ? selectedValue : option}
                 id={`${element.id}-${index}`}
                 key={`${element.id}-${index}-checkbox`}
               />
-              {option == 'input-other' && index == options.length - 1 ? (
+              {option === 'input-other' && index === options.length - 1 ? (
                 <>
                   <Label key={`${element.id}-${index}-label`}>Other</Label>
                   <Input
                     key={`${element.id}-${index}-input`}
                     type="text"
                     placeholder="Other..."
-                    className={`border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
+                    className="border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0"
                     value={selectedValue}
+                    onChange={(e) => setSelectedValue(e.target.value)}
                   />
                 </>
               ) : (

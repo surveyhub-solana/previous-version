@@ -60,39 +60,22 @@ export default function FormDetailPage({
   });
   useEffect(() => {
     async function getFormFromServer() {
-      if (!publicKey) {
-        return;
-      } else {
-        try {
-          try {
-            const fetchedForm: IFormWithId | null = await getFormByOwner(
-              // blockchain
-              id,
-              publicKey.toString()
-            );
-            if (!fetchedForm) {
-              throw new Error('form not found');
-            }
-            setForm(fetchedForm);
-          } catch (error) {
-            console.error('Error fetching stats:', error);
-            return;
-          }
-          try {
-            const fetchedStats = await getStats(publicKey?.toString(), id);
-            if (fetchedStats) setStats(fetchedStats);
-          } catch (error) {
-            console.error('Error fetching stats:', error);
-            return;
-          }
-        } catch (error) {
-          console.error('Error fetching stats:', error);
-        }
+      if (!publicKey) return;
+
+      try {
+        const fetchedForm = await getFormByOwner(id, publicKey.toString());
+        if (!fetchedForm) throw new Error('Form not found');
+        setForm(fetchedForm);
+
+        const fetchedStats = await getStats(publicKey.toString(), id);
+        if (fetchedStats) setStats(fetchedStats);
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
     }
 
     getFormFromServer();
-  }, [publicKey]);
+  }, [publicKey, id]);
 
   return (
     <>
@@ -167,7 +150,7 @@ export default function FormDetailPage({
           </div> */}
 
           <div className="container">
-            <SubmissionsTable publicKey={publicKey.toString()} id={form._id} />
+            <SubmissionsTable publicKey={publicKey.toString()} id={id} />
           </div>
         </>
       )}
@@ -195,20 +178,28 @@ function SubmissionsTable({
 }) {
   const [form, setForm] = useState<IFormWithId>();
   const [submissions, setSubmissions] = useState<IFormSubmissionWithId[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     async function fetchSubmissions() {
-      const fetchedFormWithSubmissions = await getFormWithSubmissions(
-        id,
-        publicKey
-      );
-      if (!fetchedFormWithSubmissions) throw new Error('form not found');
-      const result = fetchedFormWithSubmissions;
-      if (result) {
-        setForm(result.form);
-        setSubmissions(result.submissions);
+      setLoading(true); // Bắt đầu tải dữ liệu
+      try {
+        const fetchedFormWithSubmissions = await getFormWithSubmissions(
+          id,
+          publicKey
+        );
+        if (!fetchedFormWithSubmissions) throw new Error('form not found');
+        const result = fetchedFormWithSubmissions;
+        if (result) {
+          setForm(result.form);
+          setSubmissions(result.submissions);
+        }
+        if (!result) return;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false); // Kết thúc tải dữ liệu
       }
-      if (!result) return;
-
       // const formElements = JSON.parse(form.content) as FormElementInstance[];
 
       // formElements.forEach((element) => {
@@ -253,7 +244,8 @@ function SubmissionsTable({
     fetchSubmissions();
   }, [publicKey, id]);
   return (
-    form && (
+    form &&
+    !loading && (
       <Tabs defaultValue="statistics" className="w-full py-5">
         <TabsList className="grid w-[400px] grid-cols-2 rounded-[0.5rem]">
           <TabsTrigger value="statistics" className="rounded-[0.5rem]">

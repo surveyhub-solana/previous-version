@@ -37,7 +37,7 @@ export default function Answers({
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Sử dụng useEffect để load lại formContent mỗi khi `no` thay đổi
+  // Sử dụng useEffect để load lại formContent mỗi khi no thay đổi
   useEffect(() => {
     if (no >= 1 && no <= submissions.length) {
       const newFormContent = JSON.parse(submissions[no - 1].content);
@@ -90,7 +90,7 @@ export default function Answers({
           </div>
         </div>
         <div
-          key={`formContent-${no}`}
+          key={`${formContent}-${no}`}
           className="w-full py-4 flex items-center justify-center"
         >
           <div className="max-w-[620px] flex flex-col gap-4 flex-grow bg-background h-full w-full rounded-2xl p-8 overflow-y-auto">

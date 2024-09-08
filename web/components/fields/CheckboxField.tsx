@@ -69,6 +69,7 @@ export const CheckboxFieldFormElement: FormElement = {
     currentValue: string
   ): boolean => {
     const element = formElement as CustomInstance;
+    if (!currentValue && element.extraAttributes.required) return false;
     const array_answers: string[] = JSON.parse(currentValue);
     if (element.extraAttributes.required) {
       if (
@@ -145,37 +146,60 @@ function FormComponent({
   elementInstance,
   submitValue,
   isInvalid,
-  defaultValues,
+  defaultValue,
 }: {
   elementInstance: FormElementInstance;
   submitValue?: SubmitFunction;
   isInvalid?: boolean;
-  defaultValues?: string[];
+  defaultValue?: string;
 }) {
   const element = elementInstance as CustomInstance;
   const { label, required, helperText, options } = element.extraAttributes;
-  const [values, setValues] = useState<boolean[]>(() => {
-    if (defaultValues == null) {
-      // If defaultValues is null, return an array of 'false' with the same length as 'options'
-      return Array(options.length).fill(false);
-    } else {
-      // Map defaultValues to boolean values, then fill remaining slots with 'false'
-      const defaultMappedValues = defaultValues.map(
-        (defaultValue) => defaultValue === 'true'
-      );
-      const remainingFalseValues = Array(
-        options.length - defaultMappedValues.length
-      ).fill(false);
-      // Concatenate the mapped values and the remaining 'false' values
-      return [...defaultMappedValues, ...remainingFalseValues];
-    }
-  });
+
+  // State for stringValues
   const [stringValues, setStringValues] = useState<string[]>(() => {
     const optionValues = [...options];
-    if (options[options.length - 1] == 'input-other')
+    if (options[options.length - 1] === 'input-other')
       optionValues[optionValues.length - 1] = '';
     return optionValues;
   });
+
+  // State for boolean values
+  const [values, setValues] = useState<boolean[]>(() => {
+    if (defaultValue == null) {
+      return Array(options.length).fill(false);
+    } else {
+      const defaultValues = JSON.parse(defaultValue);
+      const newArray = Array(options.length).fill(false);
+      options.forEach((option, index) => {
+        if (defaultValues.includes(option) && index !== options.length - 1)
+          newArray[index] = true;
+      });
+      return newArray;
+    }
+  });
+
+  // Handle setting string values for 'input-other' if necessary
+  useEffect(() => {
+    const defaultValues = JSON.parse(defaultValue || '');
+    if (
+      options[options.length - 1] === 'input-other' &&
+      !options.includes(defaultValues?.[defaultValues.length - 1])
+    ) {
+      setValues((prevValues) => {
+        const newValues = [...prevValues];
+        newValues[newValues.length - 1] = true;
+        return newValues;
+      });
+
+      setStringValues((prevStringValues) => {
+        const newStringValue = [...prevStringValues];
+        newStringValue[newStringValue.length - 1] =
+          defaultValues[defaultValues.length - 1];
+        return newStringValue;
+      });
+    }
+  }, [defaultValue, options]);
 
   const [error, setError] = useState(false);
 
@@ -227,6 +251,7 @@ function FormComponent({
                 <Label key={`${element.id}-${index}-label`}>Other</Label>
                 <Input
                   key={`${element.id}-${index}-input`}
+                  value={stringValues[stringValues.length - 1]}
                   type="text"
                   placeholder="Value..."
                   className={`${cn(
@@ -266,9 +291,7 @@ function FormComponent({
               <Label
                 htmlFor={`${element.id}-${index}`}
                 key={`${element.id}-${index}-label`}
-                className={
-                  'peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-                }
+                className={`${cn(error && 'text-red-500')}`}
                 onClick={() =>
                   setValues((prevValues) => {
                     const newValues = [...prevValues]; // Create a copy of the current array
@@ -299,21 +322,32 @@ function AnswerComponent({
 }) {
   const element = elementInstance as CustomInstance;
   const { label, required, helperText, options } = element.extraAttributes;
+
   const [values, setValues] = useState<boolean[]>(() => {
     const newValues = Array(options.length).fill(false);
-    if (!answers || answers.length == 0) return [...newValues];
-    if (
-      options[options.length - 1] == 'input-other' &&
-      !options.includes(answers[answers.length - 1])
-    )
-      newValues[options.length - 1] = true;
-    answers.forEach((answer, index) => {
-      if (options.includes(answer)) {
-        newValues[options.findIndex((option) => option === answer)] = true;
-      }
-    });
     return [...newValues];
   });
+
+  // Sử dụng useEffect để cập nhật values khi answers hoặc options thay đổi
+  useEffect(() => {
+    const newValues = Array(options.length).fill(false);
+
+    if (answers && answers.length > 0) {
+      if (
+        options[options.length - 1] === 'input-other' &&
+        !options.includes(answers[answers.length - 1])
+      ) {
+        newValues[options.length - 1] = true;
+      }
+      answers.forEach((answer) => {
+        if (options.includes(answer)) {
+          newValues[options.findIndex((option) => option === answer)] = true;
+        }
+      });
+    }
+
+    setValues(newValues);
+  }, [answers, options]);
 
   return (
     <div className="flex flex-col items-top">
@@ -333,7 +367,7 @@ function AnswerComponent({
               checked={values[index]}
               aria-readonly
             />
-            {option == 'input-other' && index == options.length - 1 ? (
+            {option === 'input-other' && index === options.length - 1 ? (
               <>
                 <Label key={`${element.id}-${index}-label`}>Other</Label>
                 <Input
@@ -341,7 +375,9 @@ function AnswerComponent({
                   type="text"
                   placeholder="Value..."
                   className={`border-b-2 border-t-0 border-r-0 border-l-0 focus-visible:ring-0`}
-                  value={values[index] && answers ? answers[answers.length - 1] : ''}
+                  value={
+                    values[index] && answers ? answers[answers.length - 1] : ''
+                  }
                 />
               </>
             ) : (
@@ -365,7 +401,6 @@ function AnswerComponent({
     </div>
   );
 }
-
 type propertiesFormSchemaType = z.infer<typeof propertiesSchema>;
 function PropertiesComponent({
   elementInstance,
