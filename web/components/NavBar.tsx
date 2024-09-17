@@ -47,7 +47,7 @@ export default function NavBar() {
           className="w-fit h-auto rounded-[5px] text-xl ms-2 px-6"
           variant={'secondary'}
         >
-          <Link href={`/marketplace`} className="w-fit">
+          <Link href={`/`} className="w-fit">
             <FaCartArrowDown />
           </Link>
         </Button>
