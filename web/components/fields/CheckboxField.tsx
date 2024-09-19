@@ -72,6 +72,8 @@ export const CheckboxFieldFormElement: FormElement = {
     if (!currentValue && element.extraAttributes.required) return false;
     const array_answers: string[] = JSON.parse(currentValue);
     if (element.extraAttributes.required) {
+      if (array_answers.length < 1) return false;
+
       if (
         element.extraAttributes.options[
           element.extraAttributes.options.length - 1

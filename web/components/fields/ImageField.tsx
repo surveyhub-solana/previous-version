@@ -173,7 +173,6 @@ function PropertiesComponent({
                   rows={10}
                   placeholder={'Description for Image...'}
                   onChange={(e) => {
-                    console.log(field.value.toString());
                     field.onChange(e.target.value);
                   }}
                   //   onKeyDown={(e) => {
@@ -191,7 +190,7 @@ function PropertiesComponent({
           name="width"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Width (px): {form.watch('width')}</FormLabel>
+              <FormLabel>Width (%): {form.watch('width')}</FormLabel>
               <FormControl className="pt-2">
                 <Slider
                   defaultValue={[field.value]}

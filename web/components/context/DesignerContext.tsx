@@ -7,7 +7,11 @@ import {
   createContext,
   useState,
 } from 'react';
-import { checkValidSection, FormElementInstance, LayoutElements } from '../FormElements';
+import {
+  checkValidSection,
+  FormElementInstance,
+  LayoutElements,
+} from '../FormElements';
 import { idGenerator } from '@/lib/idGenerator';
 
 export type DesignerContextType = {
@@ -25,7 +29,6 @@ export type DesignerContextType = {
 };
 
 export const DesignerContext = createContext<DesignerContextType | null>(null);
-
 
 const setSectionIndex = (elements: FormElementInstance[]) => {
   const sectionField = elements.filter(
@@ -63,10 +66,7 @@ export default function DesignerContextProvider({
       const newElements = [...prev];
       newElements.splice(index, 0, element);
       if (element.type == 'SectionField') {
-        if (
-          !newElements.some((element) => element.type == 'SectionField') &&
-          !checkValidSection(elements, index)
-        ) {
+        if (!checkValidSection(elements, index)) {
           const firstNotLayoutElement =
             newElements.findIndex(
               (element, index) => !checkValidSection(elements, index)

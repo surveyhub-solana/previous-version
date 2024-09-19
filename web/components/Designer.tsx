@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DesignerSidebar from './DesignerSidebar';
 import {
   DragEndEvent,
@@ -34,7 +34,9 @@ function Designer() {
       isDesignerDropArea: true,
     },
   });
-
+  useEffect(() => {
+    console.log(elements)
+  }, [elements])
   useDndMonitor({
     onDragEnd: (event: DragEndEvent) => {
       const { active, over } = event;

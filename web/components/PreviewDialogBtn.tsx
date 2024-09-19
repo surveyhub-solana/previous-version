@@ -1,7 +1,13 @@
 import { MdPreview } from 'react-icons/md';
 import useDesigner from './hooks/useDesigner';
 import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
-import React, { useCallback, useRef, useState, useTransition } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import {
   checkValidSection,
   FormElementInstance,
@@ -29,14 +35,12 @@ function PreviewDialogBtn() {
           currenContent.findIndex(
             (element, index) => !checkValidSection(currenContent, index)
           ) - 1;
-        console.log(currenContent);
-        console.log(firstNotLayoutElement);
-        console.log(currenContent.slice(0, firstNotLayoutElement));
         return currenContent.slice(0, firstNotLayoutElement);
       }
       return [];
     }
   );
+
   const [section, setSection] = useState<FormElementInstance[]>(() => {
     const currentContent = [...elements];
     if (elements.length < 1) return elements;
@@ -78,7 +82,7 @@ function PreviewDialogBtn() {
     const sections = elements.filter(
       (element) => element.type == 'SectionField'
     );
-    if (section[0].id == sections[0].id) return true;
+    if (section.length > 0 && section[0].id == sections[0].id) return true;
     return false;
   };
   const isLastSection = () => {
@@ -86,7 +90,8 @@ function PreviewDialogBtn() {
       (element) => element.type == 'SectionField'
     );
     if (!section) return true;
-    if (section[0].id == sections[sections.length - 1].id) return true;
+    if (section.length > 0 && section[0].id == sections[sections.length - 1].id)
+      return true;
     return false;
   };
   const backSection = () => {
@@ -146,14 +151,58 @@ function PreviewDialogBtn() {
     if (Object.keys(formErrors.current).length > 0) {
       return false;
     }
-    console.log('done');
     return true;
   }, [section]);
 
   const submitValue = useCallback((key: string, value: string) => {
-    console.log(value);
     formValues.current[key] = value;
   }, []);
+  useEffect(() => {
+    setSection(() => {
+      const currentContent = [...elements];
+      if (elements.length < 1) return elements;
+      if (
+        currentContent.filter((element) => element.type == 'SectionField')
+          .length < 1
+      ) {
+        return currentContent;
+      } else if (
+        currentContent.filter((element) => element.type == 'SectionField')
+          .length == 1
+      ) {
+        const firstSectionIndex = currentContent.findIndex(
+          (element) => element.type == 'SectionField'
+        );
+        return currentContent.splice(firstSectionIndex, 1);
+      } else {
+        const firstSectionIndex = currentContent.findIndex(
+          (element) => element.type == 'SectionField'
+        );
+        const nextSectionIndex =
+          currentContent
+            .slice(firstSectionIndex + 1)
+            .findIndex((element) => element.type == 'SectionField') +
+          firstSectionIndex +
+          1; // do cắt bớt firstSectionIndex + 1 phần tử nên phải + firstSectionIndex + 1 để bù lại index
+        return currentContent.slice(firstSectionIndex, nextSectionIndex);
+      }
+    });
+    setCommonLayout(() => {
+      const currenContent = [...elements];
+      // Nếu 2 cái section trở lên mới là common còn 1 cái thì sẽ lưu toàn bộ ở section
+      if (
+        currenContent.filter((element) => element.type == 'SectionField')
+          .length > 1
+      ) {
+        const firstNotLayoutElement =
+          currenContent.findIndex(
+            (element, index) => !checkValidSection(currenContent, index)
+          ) - 1;
+        return currenContent.slice(0, firstNotLayoutElement);
+      }
+      return [];
+    });
+  }, [elements]);
 
   return (
     <Dialog>
@@ -214,8 +263,46 @@ function PreviewDialogBtn() {
                         variant: 'destructive',
                       });
                       return;
-                    } else nextSection();
+                    } else {
+                      setSection(() => {
+                        const currentContent = [...elements];
+                        if (elements.length < 1) return elements;
+                        if (
+                          currentContent.filter(
+                            (element) => element.type == 'SectionField'
+                          ).length < 1
+                        ) {
+                          return currentContent;
+                        } else if (
+                          currentContent.filter(
+                            (element) => element.type == 'SectionField'
+                          ).length == 1
+                        ) {
+                          const firstSectionIndex = currentContent.findIndex(
+                            (element) => element.type == 'SectionField'
+                          );
+                          return currentContent.splice(firstSectionIndex, 1);
+                        } else {
+                          const firstSectionIndex = currentContent.findIndex(
+                            (element) => element.type == 'SectionField'
+                          );
+                          const nextSectionIndex =
+                            currentContent
+                              .slice(firstSectionIndex + 1)
+                              .findIndex(
+                                (element) => element.type == 'SectionField'
+                              ) +
+                            firstSectionIndex +
+                            1; // do cắt bớt firstSectionIndex + 1 phần tử nên phải + firstSectionIndex + 1 để bù lại index
+                          return currentContent.slice(
+                            firstSectionIndex,
+                            nextSectionIndex
+                          );
+                        }
+                      });
+                    }
                   }}
+                  disabled={pending}
                 >
                   {!pending && (
                     <>
@@ -255,7 +342,7 @@ function PreviewDialogBtn() {
                   </Button>
                 </div>
               )}
-              {section[0].type == 'SectionField'
+              {section[0]?.type == 'SectionField'
                 ? [section[0]].map((element) => {
                     const FormElement =
                       FormElements[element.type].formComponent;

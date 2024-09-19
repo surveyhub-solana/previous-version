@@ -138,7 +138,6 @@ function FormSubmitComponent({
   };
 
   const validateForm: () => boolean = () => {
-    console.log(formValues);
     for (const field of section) {
       const actualValue = formValues.current[field.id] || '';
       const valid = FormElements[field.type].validate(field, actualValue);
@@ -152,13 +151,11 @@ function FormSubmitComponent({
     if (Object.keys(formErrors.current).length > 0) {
       return false;
     }
-    console.log('done');
     return true;
   };
 
   const submitValue = useCallback((key: string, value: string) => {
     formValues.current[key] = value;
-    console.log(value);
   }, []);
 
   const submitFormHandle = async () => {
