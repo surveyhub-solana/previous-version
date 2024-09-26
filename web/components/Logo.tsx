@@ -8,7 +8,7 @@ function Logo() {
       href={'/'}
       className="hidden sm:block hover:cursor-pointer h-full aspect-square relative"
     >
-      <Image src={'/SurveyHub-Logo.png'} fill alt="" />
+      <Image src={'/branding/Logo.png'} fill alt="" />
     </Link>
   );
 }
