@@ -24,9 +24,9 @@ import { Slider } from '../ui/slider';
 
 const type: ElementsType = 'ImageField';
 const extraAttributes = {
-  url: 'https://surveyhub.tech/favicon.ico',
+  url: 'https://surveyhub.tech/branding/SURVEYHUB.png',
   description: 'SurveyHub',
-  width: 80,
+  width: 100,
 };
 const propertiesSchema = z.object({
   url: z.string().url('Image must be a valid URL.'),

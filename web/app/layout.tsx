@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   description:
     'SurveyHub - Nền tảng ứng dụng công nghệ Blockchain vào khảo sát trực tuyến giúp các dữ liệu khảo sát minh bạch và có tính ứng dụng cao. Bên cạnh đó SurveyHub cung cấp các thông tin từ dữ liệu khảo sát tới người dùng thông qua việc tích hợp AI và huấn luyện trên tập dữ liệu Blockchain.',
   openGraph: {
-    images: 'https://www.surveyhub.tech/favicon.ico',
+    images: 'https://www.surveyhub.tech/branding/LOGO.png',
     title: 'SurveyHub',
     description:
       'SurveyHub - Nền tảng khảo sát trực tuyến ứng dụng công nghệ Blockchain',
