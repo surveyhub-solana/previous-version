@@ -41,6 +41,7 @@ import {
 import Readme from '@/components/Readme';
 import Statistics from '@/components/data/Statistics';
 import Answers from '@/components/data/Answers';
+import Tools from '@/components/data/Tools';
 
 export default function FormDetailPage({
   params,
@@ -247,12 +248,15 @@ function SubmissionsTable({
     form &&
     !loading && (
       <Tabs defaultValue="statistics" className="w-full py-5">
-        <TabsList className="grid w-[400px] grid-cols-2 rounded-[0.5rem]">
+        <TabsList className="grid w-[600px] grid-cols-3 rounded-[0.5rem]">
           <TabsTrigger value="statistics" className="rounded-[0.5rem]">
             Statistics
           </TabsTrigger>
           <TabsTrigger value="answer" className="rounded-[0.5rem]">
             Answers
+          </TabsTrigger>
+          <TabsTrigger value="tools" className="rounded-[0.5rem]">
+            Tools
           </TabsTrigger>
         </TabsList>
         <TabsContent value="statistics" className="w-full min-h-screen">
@@ -260,6 +264,9 @@ function SubmissionsTable({
         </TabsContent>
         <TabsContent value="answer" className="w-full min-h-screen">
           <Answers form={form} submissions={submissions} />
+        </TabsContent>
+        <TabsContent value="tools" className="w-full min-h-screen">
+          <Tools form={form} submissions={submissions} />
         </TabsContent>
       </Tabs>
     )
