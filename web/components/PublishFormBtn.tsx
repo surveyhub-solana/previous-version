@@ -29,118 +29,32 @@ import { Input } from './ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { updateFormSchema, updateFormSchemaType } from '@/schemas/form';
-// import { publishForm, updateFormSOL } from '@/app/services/form';
-import { publishForm } from '@/action/form';
+import { publishForm, updateFormSOL } from '@/app/services/form';
+// import { publishForm } from '@/action/form';
 
 function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
   const [isPending] = useTransition();
   const [isPublishing, setIsPublishing] = useState(false);
   const wallet = useWallet();
   const { connection } = useConnection();
-  // const form = useForm<updateFormSchemaType>({
-  //   resolver: zodResolver(updateFormSchema),
-  //   defaultValues: {
-  //     sumSOL: '1',
-  //     SOLPerUser: '1',
-  //     tokenAddress: '',
-  //     checkAdvanced: false, // default to false
-  //   },
-  // });
+  const form = useForm<updateFormSchemaType>({
+    resolver: zodResolver(updateFormSchema),
+    defaultValues: {
+      sumSOL: '1',
+      SOLPerUser: '1',
+      tokenAddress: '',
+      checkAdvanced: false, // default to false
+    },
+  });
 
-  // async function onSubmit(values: updateFormSchemaType) {
-  //   const f_values: {
-  //     sumSOL: number;
-  //     SOLPerUser: number;
-  //   } = { sumSOL: 0, SOLPerUser: 0 };
-  //   f_values.sumSOL = parseFloat(values.sumSOL);
-  //   f_values.SOLPerUser = parseFloat(values.SOLPerUser);
-  //   setIsPublishing(true);
-  //   try {
-  //     if (!publicKey) {
-  //       toast({
-  //         title: 'Error',
-  //         description: 'You are not logged in to the wallet',
-  //       });
-  //       return;
-  //     }
-
-  //     if (f_values.sumSOL >= 0 && f_values.SOLPerUser >= 0) {
-  //       if (f_values.sumSOL !== 0 && f_values.SOLPerUser !== 0) {
-  //         const transactionAndId = await updateFormSOL({
-  //           id: id,
-  //           sum_sol: f_values.sumSOL,
-  //           sol_per_user: f_values.SOLPerUser,
-  //           token_address: values.tokenAddress || '',
-  //           ownerPubkey: publicKey.toString(),
-  //         });
-
-  //         if (transactionAndId) {
-  //           // Ký giao dịch bằng ví của người dùng (ở phía client)
-  //           if (wallet.signTransaction) {
-  //             // Ký giao dịch bằng ví của người dùng (ở phía client)
-  //             const signedTx = await wallet.signTransaction(
-  //               transactionAndId.tx
-  //             );
-
-  //             // Phát sóng giao dịch lên mạng Solana
-  //             const txId = await connection.sendRawTransaction(
-  //               signedTx.serialize()
-  //             );
-  //             console.log('Transaction ID:', txId);
-  //             toast({
-  //               title: 'Success',
-  //               description: 'Form updated successfully',
-  //             });
-  //             const formId = await publishForm({
-  //               id,
-  //               ownerPubkey: publicKey.toString(),
-  //             });
-  //             if (formId && formId == id) {
-  //               toast({
-  //                 title: 'Success',
-  //                 description: 'Your form is now available to the public',
-  //               });
-  //               window.location.href = `/dashboard/builder/${id}`;
-  //             } else {
-  //               toast({
-  //                 title: 'Error',
-  //                 description: 'Errors when publishing forms',
-  //               });
-  //             }
-  //           } else {
-  //             console.error('Wallet does not support signing transactions');
-  //             toast({
-  //               title: 'Error',
-  //               description: 'Wallet does not support signing transactions',
-  //               variant: 'destructive',
-  //             });
-  //           }
-  //         } else {
-  //           toast({
-  //             title: 'Error',
-  //             description: 'Error initiating a transaction from the server',
-  //             variant: 'destructive',
-  //           });
-  //         }
-  //       }
-  //     } else {
-  //       toast({
-  //         title: 'Error',
-  //         description: 'Invalid parameter',
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error during form submission:', error);
-  //     toast({
-  //       title: 'Error',
-  //       description: 'Something went wrong, please try again later',
-  //       variant: 'destructive',
-  //     });
-  //   } finally {
-  //     setIsPublishing(false);
-  //   }
-  // }
-  async function onPublish() {
+  async function onSubmit(values: updateFormSchemaType) {
+    const f_values: {
+      sumSOL: number;
+      SOLPerUser: number;
+    } = { sumSOL: 0, SOLPerUser: 0 };
+    f_values.sumSOL = parseFloat(values.sumSOL);
+    f_values.SOLPerUser = parseFloat(values.SOLPerUser);
+    setIsPublishing(true);
     try {
       if (!publicKey) {
         toast({
@@ -149,20 +63,71 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
         });
         return;
       }
-      setIsPublishing(true);
-      const publishSuccess = await publishForm(id, publicKey.toString());
-      if (!publishSuccess) {
-        toast({
-          title: 'Error',
-          description: 'Failed to publish form. Please try again.',
-          variant: 'destructive',
-        });
+
+      if (f_values.sumSOL >= 0 && f_values.SOLPerUser >= 0) {
+        if (f_values.sumSOL !== 0 && f_values.SOLPerUser !== 0) {
+          const transactionAndId = await updateFormSOL({
+            id: id,
+            sum_sol: f_values.sumSOL,
+            sol_per_user: f_values.SOLPerUser,
+            token_address: values.tokenAddress || '',
+            ownerPubkey: publicKey.toString(),
+          });
+
+          if (transactionAndId) {
+            // Ký giao dịch bằng ví của người dùng (ở phía client)
+            if (wallet.signTransaction) {
+              // Ký giao dịch bằng ví của người dùng (ở phía client)
+              const signedTx = await wallet.signTransaction(
+                transactionAndId.tx
+              );
+
+              // Phát sóng giao dịch lên mạng Solana
+              const txId = await connection.sendRawTransaction(
+                signedTx.serialize()
+              );
+              console.log('Transaction ID:', txId);
+              toast({
+                title: 'Success',
+                description: 'Form updated successfully',
+              });
+              const formId = await publishForm({
+                id,
+                ownerPubkey: publicKey.toString(),
+              });
+              if (formId && formId == id) {
+                toast({
+                  title: 'Success',
+                  description: 'Your form is now available to the public',
+                });
+                window.location.href = `/dashboard/builder/${id}`;
+              } else {
+                toast({
+                  title: 'Error',
+                  description: 'Errors when publishing forms',
+                });
+              }
+            } else {
+              console.error('Wallet does not support signing transactions');
+              toast({
+                title: 'Error',
+                description: 'Wallet does not support signing transactions',
+                variant: 'destructive',
+              });
+            }
+          } else {
+            toast({
+              title: 'Error',
+              description: 'Error initiating a transaction from the server',
+              variant: 'destructive',
+            });
+          }
+        }
       } else {
         toast({
-          title: 'Success',
-          description: 'Form published successfully.',
+          title: 'Error',
+          description: 'Invalid parameter',
         });
-        window.location.href = `/dashboard/builder/${id}`;
       }
     } catch (error) {
       console.error('Error during form submission:', error);
@@ -197,7 +162,7 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
             </span>
           </AlertDialogDescription>
 
-          {/* <Form {...form}>
+          <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
               <FormField
                 control={form.control}
@@ -287,15 +252,13 @@ function PublishFormBtn({ id, publicKey }: { id: string; publicKey: string }) {
                 />
               )}
             </form>
-          </Form> */}
+          </Form>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            // disabled={isPending || form.formState.isSubmitting || isPublishing}
-            // onClick={form.handleSubmit(onSubmit)}
-            disabled={isPending || isPublishing}
-            onClick={() => onPublish()}
+            disabled={isPending || form.formState.isSubmitting || isPublishing}
+            onClick={form.handleSubmit(onSubmit)}
           >
             Proceed {isPending && <FaSpinner className="animate-spin" />}
           </AlertDialogAction>

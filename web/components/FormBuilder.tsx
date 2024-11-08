@@ -22,15 +22,8 @@ import Link from 'next/link';
 import { BsArrowLeft, BsArrowRight } from 'react-icons/bs';
 import Confetti from 'react-confetti';
 import { Form } from '@/app/services/type';
-import { IFormWithId } from '@/lib/type';
 // blockchain form: Form
-function FormBuilder({
-  form,
-  publicKey,
-}: {
-  form: IFormWithId;
-  publicKey: string;
-}) {
+function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
   const { setElements, setSelectedElement } = useDesigner();
   const [isReady, setIsReady] = useState(false);
 
@@ -66,7 +59,7 @@ function FormBuilder({
     );
   }
 
-  const shareUrl = `${window.location.origin}/submit/${form._id}`;
+  const shareUrl = `${window.location.origin}/submit/${form.id}`;
 
   if (form.published) {
     return (
@@ -109,7 +102,7 @@ function FormBuilder({
                 </Link>
               </Button>
               <Button variant={'link'} asChild>
-                <Link href={`/dashboard/forms/${form._id}`} className="gap-2">
+                <Link href={`/dashboard/forms/${form.id}`} className="gap-2">
                   Form details
                   <BsArrowRight />
                 </Link>
@@ -133,8 +126,8 @@ function FormBuilder({
             <PreviewDialogBtn />
             {!form.published && (
               <>
-                <SaveFormBtn id={form._id} />
-                <PublishFormBtn publicKey={publicKey} id={form._id} />
+                <SaveFormBtn id={form.id} />
+                <PublishFormBtn publicKey={publicKey} id={form.id} />
               </>
             )}
           </div>

@@ -10,8 +10,8 @@ import { Button } from './ui/button';
 import { HiCursorClick } from 'react-icons/hi';
 import { toast } from './ui/use-toast';
 import { ImSpinner2 } from 'react-icons/im';
-// import { submitForm } from '@/app/services/form';
-import { submitForm } from '@/action/form';
+import { submitForm } from '@/app/services/form';
+// import { submitForm } from '@/action/form';
 import { useWallet, WalletContextState } from '@solana/wallet-adapter-react';
 import { Connection } from '@solana/web3.js';
 import { NODE_URL, DEFAULT_COMMITMENT } from '@/config/anchor/constants';
@@ -179,48 +179,34 @@ function FormSubmitComponent({
         });
       } else {
         const jsonContent = JSON.stringify(formValues.current);
-        // const transactionAndId = await submitForm({
-        //   id: formUrl,
-        //   content: jsonContent,
-        //   authorPubkey: author,
-        // });
-        // if (!transactionAndId)
-        //   toast({
-        //     title: 'Error',
-        //     description: 'Something went wrong',
-        //     variant: 'destructive',
-        //   });
-        // else {
-        //   console.log(transactionAndId.id);
-        //   if (wallet.signTransaction) {
-        //     // Ký giao dịch bằng ví của người dùng (ở phía client)
-        //     const signedTx = await wallet.signTransaction(transactionAndId.tx);
-
-        //     // Phát sóng giao dịch lên mạng Solana
-        //     const txId = await connection.sendRawTransaction(
-        //       signedTx.serialize()
-        //     );
-        //     console.log('Transaction ID:', txId);
-        //     toast({
-        //       title: 'Success',
-        //       description: 'Form submitted successfully',
-        //     });
-        //     setSubmitted(true);
-        //   }
-        // }
-        const submitSuccess = await submitForm(formUrl, jsonContent, author);
-        if (!submitSuccess) {
+        const transactionAndId = await submitForm({
+          id: formUrl,
+          content: jsonContent,
+          authorPubkey: author,
+        });
+        if (!transactionAndId)
           toast({
             title: 'Error',
-            description: 'Failed to submit form. Please try again.',
+            description: 'Something went wrong',
             variant: 'destructive',
           });
-        } else {
-          toast({
-            title: 'Success',
-            description: 'Form submitted successfully.',
-          });
-          setSubmitted(true);
+        else {
+          console.log(transactionAndId.id);
+          if (wallet.signTransaction) {
+            // Ký giao dịch bằng ví của người dùng (ở phía client)
+            const signedTx = await wallet.signTransaction(transactionAndId.tx);
+
+            // Phát sóng giao dịch lên mạng Solana
+            const txId = await connection.sendRawTransaction(
+              signedTx.serialize()
+            );
+            console.log('Transaction ID:', txId);
+            toast({
+              title: 'Success',
+              description: 'Form submitted successfully',
+            });
+            setSubmitted(true);
+          }
         }
       }
     } catch (error) {

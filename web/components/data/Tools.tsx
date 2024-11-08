@@ -1,16 +1,16 @@
-import { IFormSubmissionWithId, IFormWithId } from '@/lib/type';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { FormElementInstance, LayoutElements } from '../FormElements';
 import { toSnakeCase } from '@/lib/utils';
+import { Form, FormSubmissions } from '@/app/services/type';
 
 export default function Tools({
   form,
   submissions,
 }: {
-  form: IFormWithId;
-  submissions: IFormSubmissionWithId[];
+  form: Form;
+  submissions: FormSubmissions[];
 }) {
   const formElements = JSON.parse(form.content) as FormElementInstance[];
 

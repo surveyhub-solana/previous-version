@@ -1,5 +1,5 @@
 'use client';
-'use client';
+
 import {
   Card,
   CardContent,
@@ -26,12 +26,11 @@ import { FaWpforms } from 'react-icons/fa';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
-// import { getAllForms } from './services/form';
-import { getAllForms } from '@/action/form';
+import { getAllForms } from './services/form';
 import { Form } from './services/type';
 import { Button } from '@/components/ui/button';
-import { IForm, IFormWithId } from '@/lib/type';
 import Readme from '@/components/Readme';
+
 export default function Home() {
   const { publicKey } = useWallet();
   return (
@@ -65,10 +64,10 @@ function FormCardSkeleton() {
 
 function FormCards() {
   const { publicKey } = useWallet();
-  const [forms, setForms] = useState<IFormWithId[]>([]); // blockchain là <Form[]>
-  const [selectedForm, setSelectedForm] = useState<IFormWithId | null>(null);
+  const [forms, setForms] = useState<Form[]>([]); // blockchain là <Form[]>
+  const [selectedForm, setSelectedForm] = useState<Form | null>(null);
   const [open, setOpen] = useState(false); // Trạng thái chung cho AlertDialog
-  const handleOpenDialog = (form: IFormWithId) => {
+  const handleOpenDialog = (form: Form) => {
     setSelectedForm(form);
     setOpen(true);
   };
@@ -99,7 +98,7 @@ function FormCards() {
   return (
     <>
       {forms.map((form) => (
-        <FormCard key={form._id} form={form} onOpenDialog={handleOpenDialog} /> // blockchain form.id
+        <FormCard key={form.id} form={form} onOpenDialog={handleOpenDialog} /> // blockchain form.id
       ))}
       {selectedForm && (
         <AlertDialog open={open} onOpenChange={setOpen}>
@@ -107,7 +106,7 @@ function FormCards() {
             <AlertDialogHeader>
               <AlertDialogTitle>{selectedForm.name}</AlertDialogTitle>
               <AlertDialogDescription className="text-xs">
-                {new Date(selectedForm.created_at).toLocaleString()}
+                {new Date(selectedForm.createdAt).toLocaleString()}
               </AlertDialogDescription>
               <AlertDialogDescription className="whitespace-pre-line">
                 {selectedForm.description}
@@ -122,7 +121,7 @@ function FormCards() {
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction onClick={() => setOpen(false)}>
-                <Link href={`${origin}/submit/${selectedForm._id}`}>
+                <Link href={`${origin}/submit/${selectedForm.id}`}>
                   Fill Out Form
                 </Link>
               </AlertDialogAction>
@@ -138,11 +137,10 @@ function FormCard({
   form,
   onOpenDialog,
 }: {
-  form: IFormWithId;
-  onOpenDialog: (form: IFormWithId) => void;
+  form: Form;
+  onOpenDialog: (form: Form) => void;
 }) {
-  // const createdAtTimestamp = parseInt(form.createAt, 16) * 1000; -- blockchain
-  const createdAtTimestamp = form.created_at;
+  const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000;
   const createdAtDate = new Date(createdAtTimestamp);
   const isValidDate = !isNaN(createdAtDate.getTime());
   return (
@@ -177,7 +175,7 @@ function FormCard({
         >
           Details
         </div>
-        {/* <div className="text-sm font-medium text-muted-foreground pt-4">
+        <div className="text-sm font-medium text-muted-foreground pt-4">
           Token:{' '}
           {form.mint ? (
             <Link
@@ -189,15 +187,15 @@ function FormCard({
           ) : (
             'SOL'
           )}
-        </div> */}
+        </div>
         {/* blockchain */}
-        {/* <div className="text-sm font-medium text-muted-foreground">
+        <div className="text-sm font-medium text-muted-foreground">
           Amount per respondent: {new BN(form.solPerUser, 16).toString()}
-        </div> */}
+        </div>
       </CardContent>
       <CardFooter className="mt-auto">
         <Button asChild className="w-full mt-2 text-md gap-4">
-          <Link href={`/submit/${form._id}`}>Fill Out Form</Link>
+          <Link href={`/submit/${form.id}`}>Fill Out Form</Link>
         </Button>
       </CardFooter>
     </Card>

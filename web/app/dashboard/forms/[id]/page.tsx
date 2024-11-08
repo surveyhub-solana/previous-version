@@ -1,43 +1,21 @@
 'use client';
 import FormLinkShare from '@/components/FormLinkShare';
 import VisitBtn from '@/components/VisitBtn';
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StatsCard from '@/components/StatsCard';
 import { LuView } from 'react-icons/lu';
 import { FaWpforms } from 'react-icons/fa';
 import { HiCursorClick } from 'react-icons/hi';
 import { TbArrowBounce } from 'react-icons/tb';
-import { ElementsType, FormElementInstance } from '@/components/FormElements';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { format, formatDistance } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useWallet } from '@solana/wallet-adapter-react';
-// import {
-//   getFormByOwner,
-//   getFormWithSubmissions,
-//   getStats,
-// } from '@/app/services/form';
 import {
   getFormByOwner,
   getFormWithSubmissions,
   getStats,
-} from '@/action/form';
+} from '@/app/services/form';
 import { Form, FormSubmissions } from '@/app/services/type';
 import BN from 'bn.js';
-import {
-  IFormSubmission,
-  IFormSubmissionWithId,
-  IFormWithId,
-} from '@/lib/type';
 import Readme from '@/components/Readme';
 import Statistics from '@/components/data/Statistics';
 import Answers from '@/components/data/Answers';
@@ -52,7 +30,7 @@ export default function FormDetailPage({
 }) {
   const { id } = params;
   const { publicKey } = useWallet();
-  const [form, setForm] = useState<IFormWithId>(); // blockchain
+  const [form, setForm] = useState<Form>(); // blockchain
   const [stats, setStats] = useState({
     visits: 0,
     submissions: 0,
@@ -64,7 +42,10 @@ export default function FormDetailPage({
       if (!publicKey) return;
 
       try {
-        const fetchedForm = await getFormByOwner(id, publicKey.toString());
+        const fetchedForm = await getFormByOwner({
+          id,
+          ownerPubkey: publicKey.toString(),
+        });
         if (!fetchedForm) throw new Error('Form not found');
         setForm(fetchedForm);
 
@@ -86,12 +67,12 @@ export default function FormDetailPage({
           <div className="py-10 border-b border-muted">
             <div className="flex justify-between container">
               <h1 className="text-4xl font-bold truncate">{form.name}</h1>
-              <VisitBtn shareUrl={form._id} />
+              <VisitBtn shareUrl={form.id} />
             </div>
           </div>
           <div className="py-4 border-b border-muted">
             <div className="container flex gap-2 items-center justify-between">
-              <FormLinkShare shareUrl={form._id} />
+              <FormLinkShare shareUrl={form.id} />
             </div>
           </div>
           <div className="w-full pt-8 gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 container">
@@ -132,8 +113,7 @@ export default function FormDetailPage({
             />
           </div>
 
-          {/* blockchain
-           <div className="w-full flex py-6 container">
+          <div className="w-full flex py-6 container">
             <div className="w-fit ms-auto me-0 text-sm font-medium text-muted-foreground text-right">
               <div>
                 Total {form.mint ? 'Token' : 'SOL'} used:{' '}
@@ -148,7 +128,7 @@ export default function FormDetailPage({
                 {new BN(form.solPerUser, 16).toString()}
               </div>
             </div>
-          </div> */}
+          </div>
 
           <div className="container">
             <SubmissionsTable publicKey={publicKey.toString()} id={id} />
@@ -159,17 +139,6 @@ export default function FormDetailPage({
   );
 }
 
-type Row = { [key: string]: string } & {
-  submittedAt: Date;
-};
-
-type Column = {
-  id: string;
-  label: string;
-  required: boolean;
-  type: ElementsType;
-};
-
 function SubmissionsTable({
   publicKey,
   id,
@@ -177,18 +146,18 @@ function SubmissionsTable({
   publicKey: string;
   id: string;
 }) {
-  const [form, setForm] = useState<IFormWithId>();
-  const [submissions, setSubmissions] = useState<IFormSubmissionWithId[]>([]);
+  const [form, setForm] = useState<Form>();
+  const [submissions, setSubmissions] = useState<FormSubmissions[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchSubmissions() {
       setLoading(true); // Bắt đầu tải dữ liệu
       try {
-        const fetchedFormWithSubmissions = await getFormWithSubmissions(
+        const fetchedFormWithSubmissions = await getFormWithSubmissions({
           id,
-          publicKey
-        );
+          ownerPubkey: publicKey,
+        });
         if (!fetchedFormWithSubmissions) throw new Error('form not found');
         const result = fetchedFormWithSubmissions;
         if (result) {
@@ -201,46 +170,6 @@ function SubmissionsTable({
       } finally {
         setLoading(false); // Kết thúc tải dữ liệu
       }
-      // const formElements = JSON.parse(form.content) as FormElementInstance[];
-
-      // formElements.forEach((element) => {
-      //   switch (element.type) {
-      //     case 'TextField':
-      //     case 'NumberField':
-      //     case 'TextAreaField':
-      //     case 'DateField':
-      //     case 'SelectField':
-      //     case 'CheckboxField':
-      //     case 'RadioField':
-      //       setColumns((prevColumns) => [
-      //         ...prevColumns,
-      //         {
-      //           id: element.id,
-      //           label: element.extraAttributes?.label,
-      //           required: element.extraAttributes?.required,
-      //           type: element.type,
-      //         },
-      //       ]);
-      //       break;
-      //     default:
-      //       break;
-      //   }
-      // });
-
-      // submissions.forEach((submission: IFormSubmission) => {
-      //   // blockchain : FormSubmissions
-      //   const content = JSON.parse(submission.content);
-      //   console.log(content);
-      //   setRows((prevRows) => [
-      //     ...prevRows,
-      //     {
-      //       wallet: submission.author,
-      //       ...content,
-      //       // submittedAt: parseInt(submission.createdAt, 16) * 1000, // blockchain
-      //       submittedAt: submission.created_at,
-      //     },
-      //   ]);
-      // });
     }
     fetchSubmissions();
   }, [publicKey, id]);
@@ -271,67 +200,4 @@ function SubmissionsTable({
       </Tabs>
     )
   );
-
-  // return (
-  //   <>
-  //     <h1 className="text-2xl font-bold mb-4">Submissions</h1>
-  //     <div className="rounded-md border">
-  //       <Table className="w-max">
-  //         <TableHeader>
-  //           <TableRow>
-  //             <TableHead className="uppercase max-w-[300px]">
-  //               Wallet Address
-  //             </TableHead>
-  //             {columns.map((column) => (
-  //               <TableHead key={column.id} className="uppercase max-w-[300px]">
-  //                 {column.label}
-  //               </TableHead>
-  //             ))}
-  //             <TableHead className="text-muted-foreground text-right uppercase">
-  //               Submitted at
-  //             </TableHead>
-  //           </TableRow>
-  //         </TableHeader>
-  //         <TableBody>
-  //           {rows.map((row, index) => (
-  //             <TableRow key={index}>
-  //               <TableCell>{row['wallet']}</TableCell>
-  //               {columns.map((column) => (
-  //                 <RowCell
-  //                   key={column.id}
-  //                   type={column.type}
-  //                   value={row[column.id]}
-  //                 />
-  //               ))}
-  //               <TableCell className="text-muted-foreground text-right">
-  //                 {formatDistance(row.submittedAt, new Date(), {
-  //                   addSuffix: true,
-  //                 })}
-  //               </TableCell>
-  //             </TableRow>
-  //           ))}
-  //         </TableBody>
-  //       </Table>
-  //     </div>
-  //   </>
-  // );
 }
-
-// function RowCell({ type, value }: { type: ElementsType; value: string }) {
-//   let node: ReactNode = value;
-
-//   switch (type) {
-//     case 'DateField': {
-//       if (!value) break;
-//       const date = new Date(value);
-//       node = <Badge variant={'outline'}>{format(date, 'dd/MM/yyyy')}</Badge>;
-//       break;
-//     }
-//     // case 'CheckboxField': {
-//     //   const checked = value === 'true';
-//     //   node = <Checkbox checked={checked} disabled />;
-//     // }
-//   }
-
-//   return <TableCell className=" max-w-[300px]">{node}</TableCell>;
-// }

@@ -23,11 +23,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistance } from 'date-fns';
 import StatsCard from '@/components/StatsCard';
-// import { getOwnForms, getStats, deleteForm } from '../services/form';
-import { getOwnForms, getStats, deleteForm } from '@/action/form';
+import { getOwnForms, getStats, deleteForm } from '../services/form';
 import { Form } from '../services/type';
 import { toast } from '@/components/ui/use-toast';
-import { IFormWithId } from '@/lib/type';
 import Readme from '@/components/Readme';
 import {
   AlertDialog,
@@ -161,10 +159,10 @@ function FormCardSkeleton() {
 
 function FormCards() {
   const { publicKey } = useWallet();
-  const [forms, setForms] = useState<IFormWithId[]>([]); // blockchain <Form[]>
-  const [selectedForm, setSelectedForm] = useState<IFormWithId | null>(null);
+  const [forms, setForms] = useState<Form[]>([]); // blockchain <Form[]>
+  const [selectedForm, setSelectedForm] = useState<Form | null>(null);
   const [open, setOpen] = useState(false); // Trạng thái chung cho AlertDialog
-  const handleOpenDialog = (form: IFormWithId) => {
+  const handleOpenDialog = (form: Form) => {
     setSelectedForm(form);
     setOpen(true);
   };
@@ -196,7 +194,7 @@ function FormCards() {
     // blockchain form.id
     <>
       {forms.map((form) => (
-        <FormCard key={form._id} form={form} onOpenDialog={handleOpenDialog} />
+        <FormCard key={form.id} form={form} onOpenDialog={handleOpenDialog} />
       ))}
       {selectedForm && (
         <AlertDialog open={open} onOpenChange={setOpen}>
@@ -204,7 +202,7 @@ function FormCards() {
             <AlertDialogHeader>
               <AlertDialogTitle>{selectedForm.name}</AlertDialogTitle>
               <AlertDialogDescription className="text-xs">
-                {new Date(selectedForm.created_at).toLocaleString()}
+                {new Date(selectedForm.createdAt).toLocaleString()}
               </AlertDialogDescription>
               <AlertDialogDescription className="whitespace-pre-line">
                 {selectedForm.description}
@@ -219,7 +217,7 @@ function FormCards() {
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction onClick={() => setOpen(false)}>
-                <Link href={`${origin}/submit/${selectedForm._id}`}>
+                <Link href={`${origin}/submit/${selectedForm.id}`}>
                   Fill Out Form
                 </Link>
               </AlertDialogAction>
@@ -235,11 +233,10 @@ function FormCard({
   form,
   onOpenDialog,
 }: {
-  form: IFormWithId;
-  onOpenDialog: (form: IFormWithId) => void;
+  form: Form;
+  onOpenDialog: (form: Form) => void;
 }) {
-  // const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000; // blockchain
-  const createdAtTimestamp = form.created_at;
+  const createdAtTimestamp = parseInt(form.createdAt, 16) * 1000; // blockchain
   const createdAtDate = new Date(createdAtTimestamp);
   const isValidDate = !isNaN(createdAtDate.getTime());
   const [loading, startTransition] = useTransition();
@@ -256,51 +253,38 @@ function FormCard({
         return;
       }
       // blockchain
-      // const tx = await deleteForm({
-      //   id: form.id,
-      //   ownerPubkey: publicKey?.toString(),
-      // });
-      // if (tx) {
-      //   // Ký giao dịch bằng ví của người dùng (ở phía client)
-      //   if (wallet.signTransaction) {
-      //     // Ký giao dịch bằng ví của người dùng (ở phía client)
-      //     const signedTx = await wallet.signTransaction(tx);
+      const tx = await deleteForm({
+        id: form.id,
+        ownerPubkey: publicKey?.toString(),
+      });
+      if (tx) {
+        // Ký giao dịch bằng ví của người dùng (ở phía client)
+        if (wallet.signTransaction) {
+          // Ký giao dịch bằng ví của người dùng (ở phía client)
+          const signedTx = await wallet.signTransaction(tx);
 
-      //     // Phát sóng giao dịch lên mạng Solana
-      //     const txId = await connection.sendRawTransaction(
-      //       signedTx.serialize()
-      //     );
-      //     console.log('Transaction ID:', txId);
-      //     toast({
-      //       title: 'Success',
-      //       description: 'Form deleted successfully',
-      //     });
-      //   } else {
-      //     console.error('Wallet does not support signing transactions');
-      //     toast({
-      //       title: 'Error',
-      //       description: 'Wallet does not support signing transactions',
-      //       variant: 'destructive',
-      //     });
-      //   }
-      // } else {
-      //   toast({
-      //     title: 'Error',
-      //     description: 'Error initiating a transaction from the server',
-      //     variant: 'destructive',
-      //   });
-      // }
-      const deleteSuccess = await deleteForm(form._id, publicKey?.toString());
-      if (!deleteSuccess) {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete form. Please try again.',
-          variant: 'destructive',
-        });
+          // Phát sóng giao dịch lên mạng Solana
+          const txId = await connection.sendRawTransaction(
+            signedTx.serialize()
+          );
+          console.log('Transaction ID:', txId);
+          toast({
+            title: 'Success',
+            description: 'Form deleted successfully',
+          });
+        } else {
+          console.error('Wallet does not support signing transactions');
+          toast({
+            title: 'Error',
+            description: 'Wallet does not support signing transactions',
+            variant: 'destructive',
+          });
+        }
       } else {
         toast({
-          title: 'Success',
-          description: 'Form deleted successfully.',
+          title: 'Error',
+          description: 'Error initiating a transaction from the server',
+          variant: 'destructive',
         });
       }
     } catch (error) {
@@ -353,13 +337,13 @@ function FormCard({
       <CardFooter className="mt-auto">
         {form.published ? (
           <Button asChild className="w-full text-md gap-4">
-            <Link href={`dashboard/forms/${form._id}`}>
+            <Link href={`dashboard/forms/${form.id}`}>
               View submissions <BiRightArrowAlt />
             </Link>
           </Button>
         ) : (
           <Button asChild variant="secondary" className="w-full text-md gap-4">
-            <Link href={`dashboard/builder/${form._id}`}>
+            <Link href={`dashboard/builder/${form.id}`}>
               Edit form <FaEdit />
             </Link>
           </Button>

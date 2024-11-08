@@ -1,14 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
-// import { getForm } from '@/app/services/form';
-import { getForm } from '@/action/form';
+import { getForm } from '@/app/services/form';
+// import { getForm } from '@/action/form';
 import { FormElementInstance } from '@/components/FormElements';
 import FormSubmitComponent from '@/components/FormSubmitComponent';
 import { useWallet } from '@solana/wallet-adapter-react';
 import React from 'react';
 import Readme from '@/components/Readme';
-import { IFormWithId } from '@/lib/type';
 import ThankYouForSubmission from '@/components/ThankYouForSubmission';
+import { Form } from '@/app/services/type';
 
 function SubmitPage({
   params,
@@ -21,24 +21,17 @@ function SubmitPage({
   const [formContent, setFormContent] = useState<FormElementInstance[] | null>(
     null
   );
-  const [form, setForm] = useState<IFormWithId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const fetchForm = async () => {
       try {
-        if (publicKey) {
-          const data = await getForm(params.formUrl, publicKey?.toString());
-          if (data == false) {
-            throw new Error('form not found');
-          } else if (data == true) {
-            setSubmitted(true);
-          } else {
-            setForm(data);
-            setFormContent(JSON.parse(data.content) as FormElementInstance[]);
-          }
+        const form = await getForm(params.formUrl);
+        if (!form) {
+          throw new Error('form not found');
         }
+        setFormContent(JSON.parse(form.content) as FormElementInstance[]);
       } catch (error) {
         setError(String(error));
       }

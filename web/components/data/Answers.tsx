@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { Input } from '../ui/input';
-import { IFormSubmissionWithId, IFormWithId } from '@/lib/type';
 import {
   ElementsType,
   FormElementInstance,
@@ -18,15 +17,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Wallet } from 'lucide-react';
 import { toast } from '../ui/use-toast';
+import { FormSubmissions, Form } from '@/app/services/type';
 
 export default function Answers({
   form,
   submissions,
 }: {
-  form: IFormWithId;
-  submissions: IFormSubmissionWithId[];
+  form: Form;
+  submissions: FormSubmissions[];
 }) {
   const [no, setNo] = useState(1);
   const [formContent, setFormContent] = useState(
@@ -123,7 +122,7 @@ export default function Answers({
             })}
             <div className="flex flex-col gap-2 w-full">
               <Label className="leading-relaxed">Wallet Address:</Label>
-              <Input value={address} type="text" readOnly disabled />
+              <Input value={address.toString()} type="text" readOnly disabled />
             </div>
             <div>
               <Dialog>
@@ -149,7 +148,7 @@ export default function Answers({
                       </Label>
                       <Input
                         id="wallet"
-                        value={address}
+                        value={address.toString()}
                         className="col-span-3"
                         readOnly
                         disabled
