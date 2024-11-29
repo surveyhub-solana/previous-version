@@ -4,7 +4,10 @@ import {
   ActionError,
 } from '@solana/actions';
 const headers = createActionHeaders();
-export async function GET(req: Request, params: { formId: string }) {
+export async function GET(
+  req: Request,
+  { params }: { params: { formId: string } }
+) {
   try {
     const requestUrl = new URL(req.url);
     const baseHref = new URL(
@@ -14,11 +17,30 @@ export async function GET(req: Request, params: { formId: string }) {
     const payload: ActionGetResponse = {
       type: 'action',
       title: 'Form Submit',
-      icon: new URL('/public/branding/LOGO.png', requestUrl.origin).toString(),
+      icon: new URL('/branding/LOGO.png', requestUrl.origin).toString(),
       description: 'Transfer SOL to another Solana wallet',
       label: 'Transfer', // this value will be ignored since `links.actions` exists
       links: {
         actions: [
+          {
+            label: 'Hello', // button text
+            href: baseHref,
+            parameters: [
+              {
+                name: 'name',
+                label: `First Name ${params.formId}`,
+                required: true,
+                type: 'text',
+              },
+              {
+                name: 'name2',
+                label: `Last Name ${params.formId}`,
+                required: true,
+                type: 'text',
+              },
+            ],
+            type: 'transaction',
+          },
           {
             label: 'Submit', // button text
             href: baseHref,
@@ -26,6 +48,12 @@ export async function GET(req: Request, params: { formId: string }) {
               {
                 name: 'firstName',
                 label: `First Name ${params.formId}`,
+                required: true,
+                type: 'text',
+              },
+              {
+                name: 'lastName',
+                label: `Last Name ${params.formId}`,
                 required: true,
                 type: 'text',
               },

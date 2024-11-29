@@ -23,6 +23,8 @@ export async function POST(req: Request) {
       return remainSol >= solPerUser && solPerUser > 0;
     });
 
+    console.log(validForms);
+
     if (validForms.length == 0) {
       return new Response(JSON.stringify('Form not found!'), {
         headers: {
