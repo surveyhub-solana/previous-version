@@ -86,7 +86,6 @@ function FormCards() {
 
       try {
         const fetchedForms = await getAllForms();
-        console.log(fetchedForms);
         if (fetchedForms) setForms(fetchedForms);
       } catch (error) {
         console.error('Error fetching stats:', error);

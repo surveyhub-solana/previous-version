@@ -35,7 +35,6 @@ export async function POST(req: Request) {
     const publishedForms = formAccounts
       .map((account) => account.account)
       .filter((form) => form.published);
-    console.log(publishedForms);
     const validForms = publishedForms.filter((form) => {
       const remainSol = Number(new BN(form.remainSol as number, 16));
       const solPerUser = Number(new BN(form.solPerUser as number, 16));

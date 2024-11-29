@@ -12,14 +12,7 @@ export async function POST(req: Request) {
     const systemPublicKey = new PublicKey(process.env.SOLANA_PUBLIC_KEY || '');
     console.log(systemPublicKey);
     const formAccounts: ProgramAccount<FormAccount>[] =
-      await program.account.form.all([
-        {
-          memcmp: {
-            offset: 8 + 4 + 32, // Tính toán offset dựa trên các trường trước trường owner
-            bytes: systemPublicKey.toBase58(),
-          },
-        },
-      ]);
+      await program.account.form.all();
 
     // Lọc các form mà có publish = true
     const publishedForms = formAccounts

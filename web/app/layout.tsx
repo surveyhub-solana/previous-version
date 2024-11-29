@@ -5,6 +5,7 @@ import DesignerContextProvider from '@/components/context/DesignerContext';
 import { Toaster } from '@/components/ui/toaster';
 import React from 'react';
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
 export const viewport: Viewport = {
@@ -18,10 +19,15 @@ export const metadata: Metadata = {
   keywords: [
     'SurveyHub',
     'Survey',
+    'Survey Hub',
+    'On Chain',
+    'Online Survey',
     'Blockchain',
     'Solana',
     'Khảo sát',
     'Khảo sát trực tuyến',
+    'SurveyHub với khảo sát trực tuyến',
+    'Survey Hub với khảo sát trực tuyến',
     'Technology',
     'Web3',
   ],
@@ -58,6 +64,7 @@ export default function RootLayout({
               <NavBar />
               <main className="flex w-full flex-grow">{children}</main>
               <GoogleAnalytics gaId="G-YXJ9S5SVWR" />
+              <SpeedInsights />
               <Toaster />
             </div>
           </AppWalletProvider>
