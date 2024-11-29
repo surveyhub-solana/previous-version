@@ -1,4 +1,4 @@
-import { PublicKey, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
@@ -9,7 +9,7 @@ import {
   utils,
   web3,
 } from '@project-serum/anchor';
-import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
+import base58, { decode } from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 import crypto from 'crypto';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 
@@ -40,8 +40,9 @@ export async function POST(req: Request) {
     }
 
     const authorPublicKey = new PublicKey(authorPubkey);
-    const systemKeypair = getKeypairFromEnvironment('SOLANA_SECRET_KEY');
-    const program = await getProgram();
+    const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
+    const keypairBytes = decode(keypairBase58);
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);    const program = await getProgram();
     const provider = await getProvider();
     const idBytes = Buffer.from(id);
 

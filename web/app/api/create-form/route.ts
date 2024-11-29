@@ -1,8 +1,9 @@
-import { PublicKey, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import crypto from 'crypto';
+import { decode } from 'bs58';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 export async function POST(req: Request) {
   try {
@@ -29,7 +30,9 @@ export async function POST(req: Request) {
 
     const ownerPublicKey = new PublicKey(ownerPubkey);
     const id = crypto.randomBytes(16).toString('hex');
-    const systemKeypair = getKeypairFromEnvironment('SOLANA_SECRET_KEY');
+    const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
+    const keypairBytes = decode(keypairBase58);
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);
     const program = await getProgram();
     const provider = await getProvider();
 

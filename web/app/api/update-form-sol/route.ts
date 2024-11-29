@@ -1,9 +1,10 @@
-import { PublicKey, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 import { utils, web3 } from '@project-serum/anchor';
+import { decode } from 'bs58';
 
 async function detectTokenProgram(tokenAddress: string) {
   const provider = await getProvider();
@@ -56,8 +57,9 @@ export async function POST(req: Request) {
     }
 
     const ownerPublicKey = new PublicKey(ownerPubkey);
-    const systemKeypair = getKeypairFromEnvironment('SOLANA_SECRET_KEY');
-    const program = await getProgram();
+    const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
+    const keypairBytes = decode(keypairBase58);
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);    const program = await getProgram();
     const provider = await getProvider();
 
     // Tạo formAccount public key từ seeds

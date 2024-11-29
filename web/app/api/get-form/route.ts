@@ -3,8 +3,9 @@ import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
-import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
+import  { decode, encode } from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 import { BN } from 'bn.js';
+import { Keypair } from '@solana/web3.js';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
@@ -13,13 +14,14 @@ export async function POST(req: Request) {
     const id = await req.json();
     const program = await getProgram();
     const idBytes = Buffer.from(id);
-    const systemKeypair = getKeypairFromEnvironment('SOLANA_SECRET_KEY');
-    const formAccounts: ProgramAccount<FormAccount>[] =
+    const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
+    const keypairBytes = decode(keypairBase58);
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);    const formAccounts: ProgramAccount<FormAccount>[] =
       await program.account.form.all([
         {
           memcmp: {
             offset: 8 + 4, // Tính toán offset dựa trên các trường trước trường owner
-            bytes: base58.encode(idBytes),
+            bytes: encode(idBytes),
           },
         },
       ]);
