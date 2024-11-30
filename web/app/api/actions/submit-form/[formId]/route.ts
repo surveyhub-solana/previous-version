@@ -2,62 +2,90 @@ import {
   createActionHeaders,
   ActionGetResponse,
   ActionError,
+  ActionPostRequest,
+  ActionPostResponse,
+  createPostResponse,
 } from '@solana/actions';
+import * as anchor from '@project-serum/anchor';
+import { IDL } from '@/config/anchor/idl';
+import { getProgram } from '@/config/anchor/index';
+import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
+import { decode, encode } from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+} from '@solana/web3.js';
+import { gunzipSync } from 'zlib';
+import { createFormAction, handleAnswers } from '@/lib/handleFormAction';
+import axios from 'axios';
+
+type FormAccount = IdlAccounts<typeof IDL>['form'];
 const headers = createActionHeaders();
 export async function GET(
   req: Request,
   { params }: { params: { formId: string } }
 ) {
   try {
+    const program = await getProgram();
+    const idBytes = Buffer.from(params.formId);
+    const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
+    const keypairBytes = decode(keypairBase58);
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);
+    const formAccounts: ProgramAccount<FormAccount>[] =
+      await program.account.form.all([
+        {
+          memcmp: {
+            offset: 8 + 4, // Tính toán offset dựa trên các trường trước trường owner
+            bytes: encode(idBytes),
+          },
+        },
+      ]);
+    if (formAccounts.length == 0) {
+      throw new Error('Form not found!');
+    }
+    await program.methods
+      .visitForm()
+      .accounts({
+        form: formAccounts[0].publicKey,
+        system: systemKeypair.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([systemKeypair])
+      .rpc();
+    const publishedForms = formAccounts
+      .map((account) => account.account)
+      .filter((form) => form.published);
+
+    if (publishedForms.length == 0 || publishedForms.length > 1) {
+      throw new Error('Form not found!');
+    }
     const requestUrl = new URL(req.url);
     const baseHref = new URL(
       `/api/actions/submit-form/${params.formId}`,
       requestUrl.origin
     ).toString();
+    const title = `${publishedForms[0].name}`;
+    const description = `${publishedForms[0].description}`;
+    const content = publishedForms[0].content;
+    const contentDecoded = decode(content as string);
+    const decompressedContent = gunzipSync(contentDecoded).toString();
+    const contentParsed = JSON.parse(decompressedContent);
+    const form = createFormAction(contentParsed);
     const payload: ActionGetResponse = {
       type: 'action',
-      title: 'Form Submit',
+      title,
       icon: new URL('/branding/LOGO.png', requestUrl.origin).toString(),
-      description: 'Transfer SOL to another Solana wallet',
+      description,
       label: 'Transfer', // this value will be ignored since `links.actions` exists
       links: {
         actions: [
           {
-            label: 'Hello', // button text
-            href: baseHref,
-            parameters: [
-              {
-                name: 'name',
-                label: `First Name ${params.formId}`,
-                required: true,
-                type: 'text',
-              },
-              {
-                name: 'name2',
-                label: `Last Name ${params.formId}`,
-                required: true,
-                type: 'text',
-              },
-            ],
-            type: 'transaction',
-          },
-          {
             label: 'Submit', // button text
             href: baseHref,
-            parameters: [
-              {
-                name: 'firstName',
-                label: `First Name ${params.formId}`,
-                required: true,
-                type: 'text',
-              },
-              {
-                name: 'lastName',
-                label: `Last Name ${params.formId}`,
-                required: true,
-                type: 'text',
-              },
-            ],
+            parameters: form,
             type: 'transaction',
           },
         ],
@@ -78,3 +106,101 @@ export async function GET(
   }
 }
 export const OPTIONS = async () => Response.json(null, { headers });
+
+export const POST = async (
+  req: Request,
+  { params }: { params: { formId: string } }
+) => {
+  try {
+    const body = await req.json();
+
+    let account: PublicKey;
+    let tx: Transaction;
+    try {
+      account = new PublicKey(body.account);
+    } catch (err) {
+      throw 'Invalid "account" provided';
+    }
+    const data = body.data;
+
+    const program = await getProgram();
+    const idBytes = Buffer.from(params.formId);
+    const formAccounts: ProgramAccount<FormAccount>[] =
+      await program.account.form.all([
+        {
+          memcmp: {
+            offset: 8 + 4, // Tính toán offset dựa trên các trường trước trường owner
+            bytes: encode(idBytes),
+          },
+        },
+      ]);
+    if (formAccounts.length == 0) throw new Error('Form not found!');
+    const publishedForms = formAccounts
+      .map((account) => account.account)
+      .filter((form) => form.published);
+
+    if (publishedForms.length == 0 || publishedForms.length > 1)
+      throw new Error('Form not found!');
+
+    const content = publishedForms[0].content;
+    const contentDecoded = decode(content as string);
+    const decompressedContent = gunzipSync(contentDecoded).toString();
+    const contentParsed = JSON.parse(decompressedContent);
+
+    const answers = handleAnswers(contentParsed, data);
+
+    if (!answers) throw 'Invalid "data" provided';
+
+    const connection = new Connection(clusterApiUrl('devnet'));
+
+    try {
+      const requestUrl = new URL(req.url);
+      const submitUrl = new URL(
+        `/api/submit-form`,
+        requestUrl.origin
+      ).toString();
+      const response = await axios.post(submitUrl, {
+        id: params.formId,
+        content: JSON.stringify(answers),
+        authorPubkey: account.toString(),
+      });
+      const data = await response.data;
+      if (response.status == 200) {
+        const base64Tx = data.transaction;
+        const txBuffer = Buffer.from(base64Tx, 'base64');
+        tx = Transaction.from(txBuffer);
+        // tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+      } else throw new Error(data.error || 'Something went wrong');
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+
+    const payload: ActionPostResponse = await createPostResponse({
+      fields: {
+        transaction: tx,
+        message: 'Submit Form',
+        links: {
+          next: {
+            type: 'post',
+            href: `/api/actions/submit-form/next-action`,
+          },
+        },
+        type: 'transaction',
+      },
+      // no additional signers are required for this transaction
+      // signers: [],
+    });
+    return Response.json(payload, {
+      headers,
+    });
+  } catch (err) {
+    console.log(err);
+    const actionError: ActionError = { message: 'An unknown error occurred' };
+    if (typeof err == 'string') actionError.message = err;
+    return Response.json(actionError, {
+      status: 400,
+      headers,
+    });
+  }
+};

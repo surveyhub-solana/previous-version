@@ -1,4 +1,10 @@
-import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+} from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
@@ -42,7 +48,8 @@ export async function POST(req: Request) {
     const authorPublicKey = new PublicKey(authorPubkey);
     const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
     const keypairBytes = decode(keypairBase58);
-    const systemKeypair = Keypair.fromSecretKey(keypairBytes);    const program = await getProgram();
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);
+    const program = await getProgram();
     const provider = await getProvider();
     const idBytes = Buffer.from(id);
 
@@ -119,8 +126,8 @@ export async function POST(req: Request) {
 
     // Set feePayer to authorPublicKey
     tx.feePayer = authorPublicKey;
-    const recentBlockhash = await provider.connection.getLatestBlockhash();
-    tx.recentBlockhash = recentBlockhash.blockhash;
+    const connection = new Connection(clusterApiUrl('devnet'));
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
 
     // Ký giao dịch bằng keypair hệ thống trước
     tx.partialSign(systemKeypair);

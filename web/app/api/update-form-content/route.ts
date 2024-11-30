@@ -3,7 +3,8 @@ import * as anchor from '@project-serum/anchor';
 import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
-import { decode } from 'bs58';
+import { decode, encode } from 'bs58';
+import { gunzipSync, gzipSync } from 'zlib';
 export async function POST(req: Request) {
   try {
     const {
@@ -32,18 +33,28 @@ export async function POST(req: Request) {
     const ownerPublicKey = new PublicKey(ownerPubkey);
     const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
     const keypairBytes = decode(keypairBase58);
-    const systemKeypair = Keypair.fromSecretKey(keypairBytes);    const program = await getProgram();
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);
+    const program = await getProgram();
     const provider = await getProvider();
 
     // Tạo formAccount public key từ seeds
+
+    console.log('a');
     const [formAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from(id), ownerPublicKey.toBuffer()],
       PROGRAM_ADDRESS
     );
+    console.log('b');
+
+    const compressed = gzipSync(new_content);
+
+    console.log(compressed);
+    const decompressed = gunzipSync(compressed).toString();
+    const compressedBase64 = encode(compressed);
 
     const tx = new Transaction();
     const updateFormContentInstruction = await program.methods
-      .updateFormContent(id, new_content)
+      .updateFormContent(id, compressedBase64)
       .accounts({
         form: formAccount,
         owner: ownerPublicKey,
