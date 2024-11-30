@@ -24,13 +24,12 @@ import axios from 'axios';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 const headers = createActionHeaders();
-export async function GET(
-  req: Request,
-  { params }: { params: { formId: string } }
-) {
+export async function GET(req: Request) {
   try {
+    const requestUrl = new URL(req.url);
+    const formId = requestUrl.searchParams.get('formId') as string;
     const program = await getProgram();
-    const idBytes = Buffer.from(params.formId);
+    const idBytes = Buffer.from(formId);
     const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
     const keypairBytes = decode(keypairBase58);
     const systemKeypair = Keypair.fromSecretKey(keypairBytes);
@@ -62,9 +61,8 @@ export async function GET(
     if (publishedForms.length == 0 || publishedForms.length > 1) {
       throw new Error('Form not found!');
     }
-    const requestUrl = new URL(req.url);
     const baseHref = new URL(
-      `/api/actions/submit-form/${params.formId}`,
+      `/api/actions/submit-form`,
       requestUrl.origin
     ).toString();
     const title = `${publishedForms[0].name}`;
@@ -84,7 +82,7 @@ export async function GET(
         actions: [
           {
             label: 'Submit', // button text
-            href: baseHref,
+            href: `baseHref?formId=${formId}`,
             parameters: form,
             type: 'transaction',
           },
@@ -107,11 +105,10 @@ export async function GET(
 }
 export const OPTIONS = async () => Response.json(null, { headers });
 
-export const POST = async (
-  req: Request,
-  { params }: { params: { formId: string } }
-) => {
+export const POST = async (req: Request) => {
   try {
+    const requestUrl = new URL(req.url);
+    const formId = requestUrl.searchParams.get('formId') as string;
     const body = await req.json();
 
     let account: PublicKey;
@@ -124,7 +121,7 @@ export const POST = async (
     const data = body.data;
 
     const program = await getProgram();
-    const idBytes = Buffer.from(params.formId);
+    const idBytes = Buffer.from(formId);
     const formAccounts: ProgramAccount<FormAccount>[] =
       await program.account.form.all([
         {
@@ -160,7 +157,7 @@ export const POST = async (
         requestUrl.origin
       ).toString();
       const response = await axios.post(submitUrl, {
-        id: params.formId,
+        id: formId,
         content: JSON.stringify(answers),
         authorPubkey: account.toString(),
       });
