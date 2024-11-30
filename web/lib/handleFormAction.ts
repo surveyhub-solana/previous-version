@@ -218,7 +218,7 @@ export const handleAnswers = (
     if (typeof answers[keyAnswer] !== 'string') {
       newAnswers[keyAnswer] = JSON.stringify(answers[keyAnswer]);
     } else {
-      newAnswers[keyAnswer] = answers[keyAnswer];
+      newAnswers[keyAnswer] = answers[keyAnswer] as string;
     }
   }
   const isValid = checkValidAnswer(content, newAnswers);
