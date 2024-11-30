@@ -82,7 +82,7 @@ export async function GET(req: Request) {
         actions: [
           {
             label: 'Submit', // button text
-            href: `baseHref?formId=${formId}`,
+            href: `${baseHref}?formId=${formId}`,
             parameters: form,
             type: 'transaction',
           },
