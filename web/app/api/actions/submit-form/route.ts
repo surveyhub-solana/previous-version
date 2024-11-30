@@ -5,6 +5,8 @@ import {
   ActionPostRequest,
   ActionPostResponse,
   createPostResponse,
+  ACTIONS_CORS_HEADERS,
+  BLOCKCHAIN_IDS,
 } from '@solana/actions';
 import * as anchor from '@project-serum/anchor';
 import { IDL } from '@/config/anchor/idl';
@@ -23,7 +25,11 @@ import { createFormAction, handleAnswers } from '@/lib/handleFormAction';
 import axios from 'axios';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
-const headers = createActionHeaders();
+const headers = createActionHeaders({
+  headers: ACTIONS_CORS_HEADERS,
+  chainId: BLOCKCHAIN_IDS.devnet,
+  actionVersion: '2.1.3',
+});
 export async function GET(req: Request) {
   try {
     const requestUrl = new URL(req.url);
