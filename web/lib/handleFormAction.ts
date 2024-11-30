@@ -217,7 +217,7 @@ export const handleAnswers = (
   for (const keyAnswer in answers) {
     if (typeof answers[keyAnswer] !== 'string') {
       newAnswers[keyAnswer] = JSON.stringify(answers[keyAnswer]);
-    } else if (typeof answers[keyAnswer] === 'string') {
+    } else {
       newAnswers[keyAnswer] = answers[keyAnswer];
     }
   }
