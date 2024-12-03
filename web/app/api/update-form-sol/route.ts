@@ -59,7 +59,8 @@ export async function POST(req: Request) {
     const ownerPublicKey = new PublicKey(ownerPubkey);
     const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
     const keypairBytes = decode(keypairBase58);
-    const systemKeypair = Keypair.fromSecretKey(keypairBytes);    const program = await getProgram();
+    const systemKeypair = Keypair.fromSecretKey(keypairBytes);
+    const program = await getProgram();
     const provider = await getProvider();
 
     // Tạo formAccount public key từ seeds
@@ -119,9 +120,9 @@ export async function POST(req: Request) {
         })
         .instruction();
     } else {
-      console.log('Khối else');
+      console.log(new anchor.BN(sum_sol), new anchor.BN(sol_per_user));
       updateFormSOLInstruction = await program.methods
-        .updateFormSol(new anchor.BN(sum_sol), new anchor.BN(sol_per_user))
+        .updateFormSol( sum_sol, sol_per_user)
         .accounts({
           form: formAccount,
           owner: ownerPublicKey,

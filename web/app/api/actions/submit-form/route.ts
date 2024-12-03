@@ -81,7 +81,10 @@ export async function GET(req: Request) {
     const payload: ActionGetResponse = {
       type: 'action',
       title,
-      icon: new URL('/branding/LOGO.png', requestUrl.origin).toString(),
+      icon: new URL(
+        '/branding/vertical-lockup.png',
+        requestUrl.origin
+      ).toString(),
       description,
       label: 'Transfer', // this value will be ignored since `links.actions` exists
       links: {

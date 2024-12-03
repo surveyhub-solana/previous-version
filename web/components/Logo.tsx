@@ -8,7 +8,7 @@ function Logo() {
       href={'/'}
       className="hidden sm:block hover:cursor-pointer h-full aspect-square relative"
     >
-      <Image src={'/branding/LOGO.png'} fill alt="" />
+      <Image src={'/branding/logomark.png'} fill alt="" />
     </Link>
   );
 }

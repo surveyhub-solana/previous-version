@@ -239,6 +239,7 @@ export const updateFormSOL = async ({
   token_address: string;
   ownerPubkey: string;
 }) => {
+  console.log(sum_sol, sol_per_user);
   const response = await fetch('/api/update-form-sol', {
     method: 'POST',
     headers: {
