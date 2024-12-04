@@ -24,7 +24,7 @@ export default function NavBar() {
     if (!wallet) setBalance(0);
   }, [wallet, connection]);
   return (
-    <nav className="flex justify-end sm:justify-between items-center border-b border-border h-[60px] px-4 py-2">
+    <nav className="flex justify-end sm:justify-between items-center border-b border-border h-[60px] px-8 py-2">
       <Logo />
       <div className="width-fit flex justify-center items-stretch">
         {/* {isClient && (
