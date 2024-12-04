@@ -17,14 +17,13 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import { IoIosImages } from 'react-icons/io';
 import { Textarea } from '../ui/textarea';
 import { Slider } from '../ui/slider';
 
 const type: ElementsType = 'ImageField';
 const extraAttributes = {
-  url: 'https://surveyhub.tech/branding/vertical-lockup-transparent.png',
+  url: 'https://surveyhub.tech/branding/vertical-lockup-nobackground.png',
   description: 'SurveyHub',
   width: 100,
 };

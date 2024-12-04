@@ -83,7 +83,7 @@ export async function GET(req: Request) {
       type: 'action',
       title,
       icon: new URL(
-        '/branding/vertical-lockup-transparent.png',
+        '/branding/vertical-lockup-nobackground.png',
         requestUrl.origin
       ).toString(),
       description,
