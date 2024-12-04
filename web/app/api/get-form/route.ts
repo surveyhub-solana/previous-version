@@ -6,6 +6,7 @@ import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { decode, encode } from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 import { BN } from 'bn.js';
 import { Keypair } from '@solana/web3.js';
+import { deCompressedContent } from '@/lib/content';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
@@ -39,9 +40,10 @@ export async function POST(req: Request) {
       .map((account) => account.account)
       .filter((form) => form.published);
     const validForms = publishedForms.filter((form) => {
-      const remainSol = Number(new BN(form.remainSol as number, 16));
-      const solPerUser = Number(new BN(form.solPerUser as number, 16));
-      return remainSol >= solPerUser && solPerUser > 0;
+      return (
+        (form.remainSol as number) >= (form.solPerUser as number) &&
+        (form.solPerUser as number) > 0
+      );
     });
     if (validForms.length == 0) {
       return new Response(JSON.stringify('Form not found!'), {
@@ -51,7 +53,11 @@ export async function POST(req: Request) {
         status: 400,
       });
     }
-    return new Response(JSON.stringify(validForms[0]), {
+    const decompressedForm = {
+      ...validForms[0],
+      content: deCompressedContent(validForms[0].content as string),
+    };
+    return new Response(JSON.stringify(decompressedForm), {
       headers: {
         'Content-Type': 'application/json',
       },

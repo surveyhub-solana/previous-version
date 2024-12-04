@@ -3,6 +3,7 @@ import { getProgram } from '@/config/anchor/index';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
 import { PublicKey } from '@solana/web3.js';
+import { deCompressedContent } from '@/lib/content';
 
 type FormSubmissionsAccount = IdlAccounts<typeof IDL>['formSubmissions']; // Đảm bảo tên đúng với IDL của bạn
 
@@ -54,8 +55,19 @@ export async function POST(req: Request) {
     const submissions = formSubmissionsAccounts.map(
       (account) => account.account
     );
+    const decompressedSubmittions = submissions.map((submission) => ({
+      ...submission,
+      content: deCompressedContent(submission.content as string),
+    }));
+    const decompressedForm = {
+      ...formAccountInfo,
+      content: deCompressedContent(formAccountInfo.content as string),
+    };
     return new Response(
-      JSON.stringify({ form: formAccountInfo, submissions: submissions }),
+      JSON.stringify({
+        form: decompressedForm,
+        submissions: decompressedSubmittions,
+      }),
       {
         headers: {
           'Content-Type': 'application/json',

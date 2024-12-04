@@ -118,7 +118,7 @@ export const POST = async (req: Request) => {
     const payload: CompletedAction = {
       type: 'completed',
       title: 'Submit Form was successful!',
-      icon: new URL('/branding/vertical-lockup.png', url.origin).toString(),
+      icon: new URL('/branding/vertical-lockup-transparent.png', url.origin).toString(),
       label: 'Complete!',
       description:
         `You have now completed an action chain! ` +
@@ -138,3 +138,5 @@ export const POST = async (req: Request) => {
     });
   }
 };
+
+

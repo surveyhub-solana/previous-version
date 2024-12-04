@@ -36,6 +36,23 @@ export const validType: {
     },
   },
   {
+    title: 'TextAreaField',
+    type: 'textarea',
+    class: 'general',
+    validate: (
+      formElement: FormElementInstance,
+      currentValue: string
+    ): boolean => {
+      const element = formElement;
+      if (!element.extraAttributes) return false;
+      if (element.extraAttributes.required) {
+        return currentValue.length > 0;
+      }
+
+      return true;
+    },
+  },
+  {
     title: 'NumberField',
     type: 'number',
     class: 'general',
@@ -176,7 +193,7 @@ const createFormSelectable = (
 export const createFormAction = (
   content: FormElementInstance[]
 ): TypedActionParameter[] => {
-  return content
+  const actionForm = content
     .map((field: FormElementInstance) => {
       if (
         validType.find((item) => item.title === field.type)?.class === 'general'
@@ -192,6 +209,8 @@ export const createFormAction = (
       }
     })
     .filter((item) => item !== undefined) as TypedActionParameter[];
+  console.log('actionForm: ', actionForm);
+  return actionForm;
 };
 
 const checkValidAnswer = (

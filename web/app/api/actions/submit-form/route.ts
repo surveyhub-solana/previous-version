@@ -23,6 +23,7 @@ import {
 import { gunzipSync } from 'zlib';
 import { createFormAction, handleAnswers } from '@/lib/handleFormAction';
 import axios from 'axios';
+import { deCompressedContent } from '@/lib/content';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 const headers = createActionHeaders({
@@ -82,7 +83,7 @@ export async function GET(req: Request) {
       type: 'action',
       title,
       icon: new URL(
-        '/branding/vertical-lockup.png',
+        '/branding/vertical-lockup-transparent.png',
         requestUrl.origin
       ).toString(),
       description,
@@ -149,9 +150,7 @@ export const POST = async (req: Request) => {
       throw new Error('Form not found!');
 
     const content = publishedForms[0].content;
-    const contentDecoded = decode(content as string);
-    const decompressedContent = gunzipSync(contentDecoded).toString();
-    const contentParsed = JSON.parse(decompressedContent);
+    const contentParsed = JSON.parse(deCompressedContent(content as string));
 
     const answers = handleAnswers(contentParsed, data);
 
@@ -189,7 +188,7 @@ export const POST = async (req: Request) => {
         links: {
           next: {
             type: 'post',
-            href: `/api/actions/submit-form/next-action`,
+            href: `/api/actions/next-action`,
           },
         },
         type: 'transaction',

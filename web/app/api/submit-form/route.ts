@@ -6,8 +6,7 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
-import { getKeypairFromEnvironment } from '@solana-developers/helpers';
-import { getProgram, getProvider } from '@/config/anchor/index';
+import { getProgram } from '@/config/anchor/index';
 import { IDL } from '@/config/anchor/idl';
 import {
   IdlAccounts,
@@ -15,9 +14,10 @@ import {
   utils,
   web3,
 } from '@project-serum/anchor';
-import base58, { decode } from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
+import base58, { decode } from 'bs58';
 import crypto from 'crypto';
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
+import { compressedContent } from '@/lib/content';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
@@ -50,7 +50,6 @@ export async function POST(req: Request) {
     const keypairBytes = decode(keypairBase58);
     const systemKeypair = Keypair.fromSecretKey(keypairBytes);
     const program = await getProgram();
-    const provider = await getProvider();
     const idBytes = Buffer.from(id);
 
     const formAccounts: ProgramAccount<FormAccount>[] =
@@ -81,6 +80,8 @@ export async function POST(req: Request) {
     // Lấy mint từ formAccount
     const mint = formAccount.account.mint as PublicKey;
 
+    const compressed = compressedContent(content);
+
     let submitFormInstruction;
     if (mint) {
       // Trường hợp có mint (token_address)
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
         owner: authorPublicKey,
       });
       submitFormInstruction = await program.methods
-        .submitFormToken(content, submission_id)
+        .submitFormToken(compressed, submission_id)
         .accounts({
           form: formAccount.publicKey,
           formSubmission: formSubmissionAccount,
@@ -111,7 +112,7 @@ export async function POST(req: Request) {
     } else {
       // Trường hợp không có mint (token_address)
       submitFormInstruction = await program.methods
-        .submitForm(content, submission_id)
+        .submitForm(compressed, submission_id)
         .accounts({
           form: formAccount.publicKey,
           formSubmission: formSubmissionAccount,

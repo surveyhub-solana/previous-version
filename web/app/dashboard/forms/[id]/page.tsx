@@ -117,15 +117,15 @@ export default function FormDetailPage({
             <div className="w-fit ms-auto me-0 text-sm font-medium text-muted-foreground text-right">
               <div>
                 Total {form.mint ? 'Token' : 'SOL'} used:{' '}
-                {new BN(form.sumSol, 16).toString()}
+                {form.sumSol.toFixed(2)}
               </div>
               <div>
                 Remaining {form.mint ? 'Token' : 'SOL'}:{' '}
-                {new BN(form.remainSol, 16).toString()}
+                {form.remainSol.toFixed(2)}
               </div>
               <div>
                 {form.mint ? 'Token' : 'SOL'} per respondent:{' '}
-                {new BN(form.solPerUser, 16).toString()}
+                {form.solPerUser.toFixed(2)}
               </div>
             </div>
           </div>

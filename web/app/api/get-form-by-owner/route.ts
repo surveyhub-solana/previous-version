@@ -1,11 +1,8 @@
 import { PROGRAM_ADDRESS } from '@/config/anchor/constants';
-import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
-import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
+import { deCompressedContent } from '@/lib/content';
 import { PublicKey } from '@solana/web3.js';
-import base58 from 'bs58'; // Thêm thư viện mã hóa base58 nếu cần
 
-type FormAccount = IdlAccounts<typeof IDL>['form'];
 
 export async function POST(req: Request) {
   try {
@@ -42,7 +39,7 @@ export async function POST(req: Request) {
     // Fetch form account data
     const form = await program.account.form.fetch(formAccount);
 
-    return new Response(JSON.stringify(form), {
+    return new Response(JSON.stringify({...form, content: deCompressedContent(form.content as string)}), {
       headers: {
         'Content-Type': 'application/json',
       },

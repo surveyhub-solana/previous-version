@@ -1,9 +1,8 @@
 import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
+import { deCompressedContent } from '@/lib/content';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
-import { Keypair, PublicKey } from '@solana/web3.js';
 import { BN } from 'bn.js';
-import { decode } from 'bs58';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
@@ -13,14 +12,19 @@ export async function POST(req: Request) {
     const formAccounts: ProgramAccount<FormAccount>[] =
       await program.account.form.all();
 
+    console.log('formAccounts: ', formAccounts);
+
     // Lọc các form mà có publish = true
     const publishedForms = formAccounts
       .map((account) => account.account)
       .filter((form) => form.published);
     const validForms = publishedForms.filter((form) => {
-      const remainSol = Number(new BN(form.remainSol as number, 16));
-      const solPerUser = Number(new BN(form.solPerUser as number, 16));
-      return remainSol >= solPerUser && solPerUser > 0;
+      console.log('form.remainSol', form.remainSol);
+      console.log('form.solPerUser', form.solPerUser);
+      return (
+        (form.remainSol as number) >= (form.solPerUser as number) &&
+        (form.solPerUser as number) > 0
+      );
     });
 
     console.log(validForms);
@@ -33,7 +37,11 @@ export async function POST(req: Request) {
         status: 400,
       });
     }
-    return new Response(JSON.stringify(validForms), {
+    const decompressedForms = validForms.map((form) => ({
+      ...form,
+      content: deCompressedContent(form.content as string),
+    }));
+    return new Response(JSON.stringify(decompressedForms), {
       headers: {
         'Content-Type': 'application/json',
       },

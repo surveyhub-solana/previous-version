@@ -24,7 +24,7 @@ import { Slider } from '../ui/slider';
 
 const type: ElementsType = 'ImageField';
 const extraAttributes = {
-  url: 'https://surveyhub.tech/branding/vertical-lockup.png',
+  url: 'https://surveyhub.tech/branding/vertical-lockup-transparent.png',
   description: 'SurveyHub',
   width: 100,
 };

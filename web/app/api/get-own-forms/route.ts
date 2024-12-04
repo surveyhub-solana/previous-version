@@ -1,5 +1,6 @@
 import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
+import { deCompressedContent } from '@/lib/content';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
@@ -28,7 +29,11 @@ export async function POST(req: Request) {
       ]);
 
     const forms = formAccounts.map((account) => account.account);
-    return new Response(JSON.stringify(forms), {
+    const decompressedForms = forms.map((form) => ({
+      ...form,
+      content: deCompressedContent(form.content as string),
+    }));
+    return new Response(JSON.stringify(decompressedForms), {
       headers: {
         'Content-Type': 'application/json',
       },

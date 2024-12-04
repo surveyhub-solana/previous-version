@@ -28,9 +28,10 @@ export default function Answers({
   submissions: FormSubmissions[];
 }) {
   const [no, setNo] = useState(1);
-  const [formContent, setFormContent] = useState(
-    JSON.parse(submissions[0].content)
-  );
+  const [formContent, setFormContent] = useState(() => {
+    console.log(submissions[0].content);
+    return JSON.parse(submissions[0].content);
+  });
   const [address, setAddress] = useState(submissions[0].author);
   const formElements = JSON.parse(form.content) as FormElementInstance[];
   const [code, setCode] = useState('');
