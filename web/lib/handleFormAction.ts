@@ -183,7 +183,7 @@ const createFormSelectable = (
     options:
       field.extraAttributes?.options.map((option: string) => {
         return {
-          label: option,
+          label: option == 'input-other' ? 'Other...' : option,
           value: option,
         };
       }) || [],
