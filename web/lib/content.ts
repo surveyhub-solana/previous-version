@@ -14,6 +14,7 @@ export const compressedContent = (content: string): string => {
 
 export const deCompressedContent = (content: string): string => {
   try {
+    if (content == '[]') return content;
     const decompressed = gunzipSync(decode(content)).toString();
     return decompressed;
   } catch (error) {

@@ -2,7 +2,6 @@ import { IDL } from '@/config/anchor/idl';
 import { getProgram } from '@/config/anchor/index';
 import { deCompressedContent } from '@/lib/content';
 import { IdlAccounts, ProgramAccount } from '@project-serum/anchor';
-import { BN } from 'bn.js';
 
 type FormAccount = IdlAccounts<typeof IDL>['form'];
 
@@ -11,8 +10,6 @@ export async function POST(req: Request) {
     const program = await getProgram();
     const formAccounts: ProgramAccount<FormAccount>[] =
       await program.account.form.all();
-
-    console.log('formAccounts: ', formAccounts);
 
     // Lọc các form mà có publish = true
     const publishedForms = formAccounts

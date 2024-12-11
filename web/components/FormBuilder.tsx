@@ -42,6 +42,9 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
 
   const sensors = useSensors(mouseSensor, touchSensor);
 
+  const [copied, setCopied] = useState(false);
+  const [getBlinks, setGetBlinks] = useState(false);
+
   useEffect(() => {
     if (isReady) return;
     const elements = JSON.parse(form.content.toString());
@@ -61,6 +64,8 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
 
   const shareUrl = `${window.location.origin}/submit/${form.id}`;
 
+  const blink = `${window.location.origin}/api/actions/submit-form?formId=${form.id}`;
+
   if (form.published) {
     return (
       <div className="w-full h-full overflow-hidden relative">
@@ -70,13 +75,12 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
           recycle={false}
           numberOfPieces={1000}
         />
-        <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="flex flex-col items-center justify-center h-full w-full px-8">
           <div className="max-w-md">
-            <h1 className="text-center text-3xl font-bold text-primary border-b pb-2 mb-10">
+            <h1 className="text-center text-xl md:text-3xl font-bold text-primary pb-2">
               🎊🎊Form Published🎊🎊
             </h1>
-            <h2 className="text-2xl">Share this form</h2>
-            <h3 className="text-xl text-muted-foreground border-b pb-10">
+            <h3 className="text-md md:text-xl text-muted-foreground border-b border-t text-center py-5">
               Anyone with the link can view and submit the form
             </h3>
             <div className="my-4 flex flex-col gap-2 items-center w-full border-b pb-4">
@@ -85,13 +89,29 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
                 className="mt-2 w-full"
                 onClick={() => {
                   navigator.clipboard.writeText(shareUrl);
+                  setCopied(true);
                   toast({
                     title: 'Copied!',
                     description: 'Link copied to clipboard',
                   });
                 }}
+                disabled={copied}
               >
                 Copy link
+              </Button>
+              <Button
+                className="mt-2 w-full"
+                onClick={() => {
+                  navigator.clipboard.writeText(blink);
+                  setGetBlinks(true);
+                  toast({
+                    title: 'Get blink!',
+                    description: 'Blink copied to clipboard',
+                  });
+                }}
+                disabled={getBlinks}
+              >
+                Copy blink - use for social media (e.g. twitter)
               </Button>
             </div>
             <div className="flex justify-between">

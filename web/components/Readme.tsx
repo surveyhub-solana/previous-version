@@ -4,9 +4,27 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Loader } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function Readme() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const handleLoad = () => setIsLoading(false);
+    window.addEventListener('load', handleLoad);
+
+    return () => {
+      window.removeEventListener('load', handleLoad);
+    };
+  }, []);
+  if (isLoading)
+    return (
+      <div className="w-full h-full flex items-center justify-center py-32">
+        <Loader className="animate-spin" size={40} />
+      </div>
+    );
   return (
     <div className="w-full flex overflow-auto items-center justify-center py-4">
       <div className="h-fit w-[80%] md:w-[60%]">

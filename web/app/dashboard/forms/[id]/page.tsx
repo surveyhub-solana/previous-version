@@ -64,9 +64,11 @@ export default function FormDetailPage({
       {!publicKey && <Readme />}
       {publicKey && form && (
         <>
-          <div className="py-10 border-b border-muted">
-            <div className="flex justify-between container">
-              <h1 className="text-4xl font-bold truncate">{form.name}</h1>
+          <div className="py-4 border-b border-muted">
+            <div className="flex justify-between container items-center gap-2 flex-col md:flex-row">
+              <h1 className="text-4xl md:text-2xl font-bold truncate">
+                {form.name}
+              </h1>
               <VisitBtn shareUrl={form.id} />
             </div>
           </div>
@@ -177,7 +179,7 @@ function SubmissionsTable({
     form &&
     !loading && (
       <Tabs defaultValue="statistics" className="w-full py-5">
-        <TabsList className="grid w-[600px] grid-cols-3 rounded-[0.5rem]">
+        <TabsList className="grid w-full md:w-[600px] grid-cols-3 rounded-[0.5rem]">
           <TabsTrigger value="statistics" className="rounded-[0.5rem]">
             Statistics
           </TabsTrigger>
