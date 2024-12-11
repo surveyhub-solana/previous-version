@@ -1,5 +1,7 @@
+import { FormElementInstance } from '@/components/FormElements';
 import { decode, encode } from 'bs58';
 import { gunzipSync, gzipSync } from 'zlib';
+import { idGenerator } from './idGenerator';
 
 export const compressedContent = (content: string): string => {
   try {
@@ -19,6 +21,33 @@ export const deCompressedContent = (content: string): string => {
     return decompressed;
   } catch (error) {
     console.error('Error decompressing content:', error);
+    throw error;
+  }
+};
+export const handleOldContent = (content: string): string => {
+  try {
+    const oldContent: FormElementInstance[] = JSON.parse(content);
+    const contentRemoveId = oldContent.map(({ id, ...rest }) => rest);
+    return JSON.stringify(contentRemoveId);
+  } catch (error) {
+    console.error('Error handling old content:', error);
+    throw error;
+  }
+};
+type FormElementWithoutId = Omit<FormElementInstance, 'id'>;
+
+export const handleNewContent = (content: string): string => {
+  try {
+    const newContent: FormElementWithoutId[] = JSON.parse(content);
+    const contentAddId = newContent.map(({ ...rest }) => {
+      return {
+        ...rest,
+        id: idGenerator(),
+      };
+    });
+    return JSON.stringify(contentAddId);
+  } catch (error) {
+    console.error('Error handling new content:', error);
     throw error;
   }
 };

@@ -235,7 +235,6 @@ function FormComponent({
           >
             <Checkbox
               id={`${element.id}-${index}`}
-              key={`${element.id}-${index}-checkbox`}
               checked={values[index]}
               onCheckedChange={async (checked) => {
                 let value = false;
@@ -312,8 +311,7 @@ function FormComponent({
             ) : (
               <Label
                 htmlFor={`${element.id}-${index}`}
-                key={`${element.id}-${index}-label`}
-                className={`${cn(error && 'text-red-500')} cursor-pointer`}
+                className={`${cn(error && 'text-red-500')}`}
               >
                 {option}
               </Label>

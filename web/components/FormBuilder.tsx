@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import GenerateElementsBtn from './GenerateELementsBtn';
 import PreviewDialogBtn from './PreviewDialogBtn';
 import PublishFormBtn from './PublishFormBtn';
 import SaveFormBtn from './SaveFormBtn';
@@ -148,6 +149,10 @@ function FormBuilder({ form, publicKey }: { form: Form; publicKey: string }) {
               <>
                 <SaveFormBtn id={form.id} />
                 <PublishFormBtn publicKey={publicKey} id={form.id} />
+                <GenerateElementsBtn
+                  title={form.name}
+                  description={form.description}
+                />
               </>
             )}
           </div>

@@ -29,6 +29,8 @@ export async function POST(req: Request) {
       });
     }
 
+    console.log('Content: ', new_content);
+
     const ownerPublicKey = new PublicKey(ownerPubkey);
     const keypairBase58 = process.env.SOLANA_SECRET_KEY as string;
     const keypairBytes = decode(keypairBase58);

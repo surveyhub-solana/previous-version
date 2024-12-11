@@ -86,6 +86,16 @@ export const FormElements: FormElementsType = {
   RadioField: RadioFieldFormElement,
   SectionField: SectionFieldFormElement,
 };
+
+export const FieldElements = [
+  'TextField',
+  'NumberField',
+  'TextAreaField',
+  'DateField',
+  'SelectField',
+  'CheckboxField',
+  'RadioField',
+]
 export const LayoutElements = [
   'TitleField',
   'SubTitleField',

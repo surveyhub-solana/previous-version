@@ -13,6 +13,7 @@ import {
   LayoutElements,
 } from '../FormElements';
 import { idGenerator } from '@/lib/idGenerator';
+import axios from 'axios';
 
 export type DesignerContextType = {
   elements: FormElementInstance[];
@@ -26,6 +27,12 @@ export type DesignerContextType = {
   updateElement: (id: string, element: FormElementInstance) => void;
 
   filterElements: () => FormElementInstance[];
+
+  generateElements: (
+    userPrompt: string,
+    title: string,
+    description: string
+  ) => Promise<void>;
 };
 
 export const DesignerContext = createContext<DesignerContextType | null>(null);
@@ -165,6 +172,26 @@ export default function DesignerContextProvider({
     return newElements;
   };
 
+  const generateElements = async (
+    userPrompt: string,
+    title: string,
+    description: string
+  ) => {
+    try {
+      const response = await axios.post('/api/generate-elements', {
+        userPrompt,
+        oldContent: JSON.stringify(elements),
+        title,
+        description,
+      });
+      if (response.status == 200) {
+        setElements(JSON.parse(response.data));
+      } else throw new Error('Error generating form elements');
+    } catch (error) {
+      console.error('Error generating form elements:', error);
+    }
+  };
+
   return (
     <DesignerContext.Provider
       value={{
@@ -178,6 +205,8 @@ export default function DesignerContextProvider({
 
         updateElement,
         filterElements,
+
+        generateElements
       }}
     >
       {children}
