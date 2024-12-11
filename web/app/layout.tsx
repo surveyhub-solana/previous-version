@@ -40,12 +40,12 @@ export const metadata: Metadata = {
   },
   title: 'SurveyHub Solana',
   description:
-    'SurveyHub - Nền tảng ứng dụng công nghệ Blockchain trên Solana vào khảo sát trực tuyến giúp các dữ liệu khảo sát minh bạch và có tính ứng dụng cao. Bên cạnh đó SurveyHub cung cấp các thông tin từ dữ liệu khảo sát tới người dùng thông qua việc tích hợp AI và huấn luyện trên tập dữ liệu Blockchain.',
+    'SurveyHub is an all-in-one survey platform on the Solana blockchain, providing an engaging experience throughout the entire survey process.',
   openGraph: {
-    images: 'https://www.surveyhub.tech/branding/logomark-nopadding.png',
+    images: 'https://www.surveyhub.tech/branding/actions.png',
     title: 'SurveyHub',
     description:
-      'SurveyHub - Nền tảng khảo sát trực tuyến ứng dụng công nghệ Blockchain',
+      'SurveyHub is an all-in-one survey platform on the Solana blockchain, providing an engaging experience throughout the entire survey process.',
     url: 'https://www.surveyhub.tech/',
   },
 };
