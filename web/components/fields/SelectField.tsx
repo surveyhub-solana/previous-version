@@ -31,7 +31,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Switch } from '../ui/switch';
-import { cn } from '@/lib/utils';
+import { cn, toSnakeCase } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -439,7 +439,7 @@ const generateChartConfig = (options: string[]) => {
 
   options.forEach((option, index) => {
     const colorIndex = index % (baseColors.length - 1);
-    result[option] = {
+    result[toSnakeCase(option)] = {
       label:
         option === 'input-other'
           ? 'Other'
@@ -498,7 +498,7 @@ function DataComponent({
   const overView = options.map((option) => ({
     option,
     total: answersMap.has(option) ? answersMap.get(option)?.total : 0,
-    fill: 'var(--color-' + option + ')',
+    fill: 'var(--color-' + toSnakeCase(option) + ')',
   }));
   const chartConfig = generateChartConfig(options);
   if (!answersMap.size) return <></>;
