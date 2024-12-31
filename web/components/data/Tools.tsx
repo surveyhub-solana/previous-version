@@ -96,7 +96,6 @@ export default function Tools({
       type: 'application/octet-stream', // Có thể cải thiện bằng cách sử dụng MIME type chính xác
     });
     saveAs(dataBlob, `${toSnakeCase(form.name)}.xlsx`);
-    console.log(header.length);
   };
 
   return (

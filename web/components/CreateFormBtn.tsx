@@ -74,7 +74,6 @@ function CreateFormBtn() {
             const txId = await connection.sendRawTransaction(
               signedTx.serialize()
             );
-            console.log('Transaction ID:', txId);
             toast({
               title: 'Success',
               description: 'Form created successfully',

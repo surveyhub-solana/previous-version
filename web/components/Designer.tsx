@@ -34,9 +34,6 @@ function Designer() {
       isDesignerDropArea: true,
     },
   });
-  useEffect(() => {
-    console.log(elements)
-  }, [elements])
   useDndMonitor({
     onDragEnd: (event: DragEndEvent) => {
       const { active, over } = event;

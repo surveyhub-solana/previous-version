@@ -2,6 +2,7 @@
 
 import {
   ElementsType,
+  FormDataType,
   FormElement,
   FormElementInstance,
   SubmitFunction,
@@ -14,7 +15,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import useDesigner from '../hooks/useDesigner';
 import { RxDropdownMenu } from 'react-icons/rx';
-
+import { Pie, PieChart } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
 import {
   Form,
   FormControl,
@@ -45,7 +51,7 @@ const extraAttributes = {
   helperText: 'Helper text',
   required: false,
   placeHolder: 'Value here...',
-  options: [],
+  options: [] as string[],
 };
 
 const propertiesSchema = z.object({
@@ -71,6 +77,7 @@ export const SelectFieldFormElement: FormElement = {
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
   answerComponent: AnswerComponent,
+  dataComponent: DataComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -415,5 +422,103 @@ function PropertiesComponent({
         </Button>
       </form>
     </Form>
+  );
+}
+
+const generateChartConfig = (options: string[]) => {
+  // Danh sách màu có sẵn
+  const baseColors = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+  ];
+
+  const result: { [key: string]: { label: string; color: string } } = {};
+
+  options.forEach((option, index) => {
+    const colorIndex = index % (baseColors.length - 1);
+    result[option] = {
+      label:
+        option === 'input-other'
+          ? 'Other'
+          : option.charAt(0).toUpperCase() + option.slice(1), // Capitalize label
+      color: baseColors[colorIndex],
+    };
+  });
+
+  return result;
+};
+
+function DataComponent({
+  data,
+  elementInstance,
+}: {
+  data: FormDataType[];
+  elementInstance: FormElementInstance;
+}) {
+  const element = elementInstance as CustomInstance;
+  const { options } = element.extraAttributes;
+  if (!options) return <></>;
+  const answersMap = new Map<
+    string,
+    {
+      total: number;
+      details: { author: string; createAt: string; answer: string }[];
+    }
+  >();
+  for (const dataItem of data) {
+    if (!dataItem.content) continue;
+    const answer = dataItem.content;
+    const answerFormatted = options.includes(answer) ? answer : 'Others';
+    if (answersMap.has(answerFormatted)) {
+      const answerData = answersMap.get(answerFormatted);
+      if (answerData) {
+        answerData.total += 1;
+        answerData.details.push({
+          author: dataItem.author,
+          createAt: dataItem.createAt,
+          answer,
+        });
+      }
+    } else {
+      answersMap.set(answerFormatted, {
+        total: 1,
+        details: [
+          {
+            author: dataItem.author,
+            createAt: dataItem.createAt,
+            answer,
+          },
+        ],
+      });
+    }
+  }
+  const overView = options.map((option) => ({
+    option,
+    total: answersMap.has(option) ? answersMap.get(option)?.total : 0,
+    fill: 'var(--color-' + option + ')',
+  }));
+  const chartConfig = generateChartConfig(options);
+  if (!answersMap.size) return <></>;
+  return (
+    <div>
+      <div className="text-center flex flex-col items-center justify-center pb-2">
+        <div>{element.extraAttributes.label}</div>
+        <div className="text-sm text-muted-foreground">
+          {element.extraAttributes.helperText}
+        </div>
+      </div>
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-square max-h-[250px] pb-0 [&_.recharts-pie-label-text]:fill-foreground"
+      >
+        <PieChart>
+          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+          <Pie data={overView} dataKey="total" label nameKey="option" />
+        </PieChart>
+      </ChartContainer>
+    </div>
   );
 }

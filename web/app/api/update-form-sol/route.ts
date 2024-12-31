@@ -120,7 +120,6 @@ export async function POST(req: Request) {
         })
         .instruction();
     } else {
-      console.log(new anchor.BN(sum_sol), new anchor.BN(sol_per_user));
       updateFormSOLInstruction = await program.methods
         .updateFormSol( sum_sol, sol_per_user)
         .accounts({
@@ -130,7 +129,6 @@ export async function POST(req: Request) {
           systemProgram: anchor.web3.SystemProgram.programId,
         })
         .instruction();
-      console.log('Token Address: ', token_address);
     }
 
     tx.add(updateFormSOLInstruction);

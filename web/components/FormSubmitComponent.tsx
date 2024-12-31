@@ -191,7 +191,6 @@ function FormSubmitComponent({
             variant: 'destructive',
           });
         else {
-          console.log(transactionAndId.id);
           if (wallet.signTransaction) {
             // Ký giao dịch bằng ví của người dùng (ở phía client)
             const signedTx = await wallet.signTransaction(transactionAndId.tx);
@@ -200,7 +199,6 @@ function FormSubmitComponent({
             const txId = await connection.sendRawTransaction(
               signedTx.serialize()
             );
-            console.log('Transaction ID:', txId);
             toast({
               title: 'Success',
               description: 'Form submitted successfully',

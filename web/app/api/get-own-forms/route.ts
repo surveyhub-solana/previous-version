@@ -9,7 +9,6 @@ export async function POST(req: Request) {
   try {
     const ownerPublickey = await req.json();
     if (!ownerPublickey) {
-      console.log("Let's connect to your wallet");
       return new Response(JSON.stringify("Let's connect to your wallet"), {
         headers: {
           'Content-Type': 'application/json',

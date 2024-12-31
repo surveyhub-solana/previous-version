@@ -12,8 +12,6 @@ import { decode } from 'bs58';
 export async function POST(req: Request) {
   try {
     const { address, code } = await req.json(); // No need for amount now, as it's fixed
-    console.log(address);
-    console.log(code);
     if (!address || !code) {
       return new Response(
         JSON.stringify('Address and Access Code are required!'),

@@ -42,7 +42,6 @@ export const POST = async (req: Request) => {
     const body: NextActionPostRequest = await req.json();
 
     // body will contain the user's `account` and `memo` input from the user
-    console.log('body:', body);
 
     let account: PublicKey;
     try {
@@ -68,8 +67,6 @@ export const POST = async (req: Request) => {
 
     try {
       const status = await connection.getSignatureStatus(signature);
-
-      console.log('signature status:', status);
 
       if (!status) throw 'Unknown signature status';
 
@@ -105,8 +102,6 @@ export const POST = async (req: Request) => {
       signature,
       'confirmed'
     );
-
-    console.log('transaction: ', transaction);
 
     /**
      * returning a `CompletedAction` allows you to update the

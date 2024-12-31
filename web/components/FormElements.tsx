@@ -31,6 +31,12 @@ export type ElementsType =
 
 export type SubmitFunction = (key: string, value: string) => void;
 
+export type FormDataType = {
+  author: string;
+  createAt: string;
+  content: string;
+};
+
 export type FormElement = {
   type: ElementsType;
 
@@ -56,6 +62,10 @@ export type FormElement = {
   answerComponent: React.FC<{
     elementInstance: FormElementInstance;
     answers?: string[];
+  }>;
+  dataComponent?: React.FC<{
+    data: FormDataType[];
+    elementInstance: FormElementInstance;
   }>;
 
   validate: (formElement: FormElementInstance, currentValue: string) => boolean;
@@ -95,7 +105,7 @@ export const FieldElements = [
   'SelectField',
   'CheckboxField',
   'RadioField',
-]
+];
 export const LayoutElements = [
   'TitleField',
   'SubTitleField',

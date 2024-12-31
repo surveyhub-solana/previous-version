@@ -173,7 +173,6 @@ const createFormGeneral = (
 const createFormSelectable = (
   field: FormElementInstance
 ): ActionParameterSelectable<SelectableParameterType> => {
-  console.log(field);
   return {
     name: field.id,
     label: field.extraAttributes?.label || '',
@@ -209,7 +208,6 @@ export const createFormAction = (
       }
     })
     .filter((item) => item !== undefined) as TypedActionParameter[];
-  console.log('actionForm: ', actionForm);
   return actionForm;
 };
 

@@ -213,7 +213,6 @@ export default function Answers({
                                 title: 'Error',
                                 description: 'Something went wrong',
                               });
-                              console.log(data);
                               throw new Error(
                                 data.error || 'Something went wrong'
                               );

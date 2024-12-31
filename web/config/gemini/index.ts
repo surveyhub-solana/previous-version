@@ -23,8 +23,11 @@ export const generateElements = async (
     '\nForm title: ' +
     title +
     '\nForm description: ' +
-    description;
-  '\nOld Content: ' + oldContentHandle + '\nUser Prompr: ' + userPrompt;
+    description +
+    '\nOld Content: ' +
+    oldContentHandle +
+    '\nUser Prompr: ' +
+    userPrompt;
 
   const result = await model.generateContent(prompt);
 

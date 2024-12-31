@@ -1,5 +1,5 @@
 import NavBar from '@/components/NavBar';
-import AppWalletProvider from '../components/wallet/AppWalletProvider';
+import AppWalletProvider from '@/components/wallet/AppWalletProvider';
 import './globals.css';
 import DesignerContextProvider from '@/components/context/DesignerContext';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,6 +8,9 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import type { Viewport } from 'next';
+import { ParallaxProvider } from 'react-scroll-parallax';
+import { ThemeProvider } from 'next-themes';
+import LayoutProvider from './layout-provider';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -60,13 +63,9 @@ export default function RootLayout({
       <body>
         <DesignerContextProvider>
           <AppWalletProvider>
-            <div className="flex flex-col min-h-screen min-w-full bg-background max-h-screen">
-              <NavBar />
-              <main className="flex w-full flex-grow">{children}</main>
-              <GoogleAnalytics gaId="G-YXJ9S5SVWR" />
-              <SpeedInsights />
-              <Toaster />
-            </div>
+            <LayoutProvider>{children}</LayoutProvider>
+            <GoogleAnalytics gaId="G-YXJ9S5SVWR" />
+            <SpeedInsights />
           </AppWalletProvider>
         </DesignerContextProvider>
       </body>

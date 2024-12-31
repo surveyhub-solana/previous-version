@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import {
   ElementsType,
+  FormDataType,
   FormElement,
   FormElementInstance,
   SubmitFunction,
@@ -14,7 +15,7 @@ import useDesigner from '../hooks/useDesigner';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-import { cn } from '@/lib/utils';
+import { cn, formatWalletAddress } from '@/lib/utils';
 import { Bs123 } from 'react-icons/bs';
 import {
   Form,
@@ -26,6 +27,7 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Switch } from '../ui/switch';
+import PaginationData from '../PaginationData';
 
 const type: ElementsType = 'NumberField';
 
@@ -58,6 +60,7 @@ export const NumberFieldFormElement: FormElement = {
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
   answerComponent: AnswerComponent,
+  dataComponent: DataComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -314,5 +317,76 @@ function PropertiesComponent({
         />
       </form>
     </Form>
+  );
+}
+
+function DataComponent({
+  data,
+  elementInstance,
+}: {
+  data: FormDataType[];
+  elementInstance: FormElementInstance;
+}) {
+
+  const clearData = data.filter((item) => item.content != '' && item.content);
+
+  const element = elementInstance as CustomInstance;
+
+  const [no, setNo] = useState(1);
+
+  const dataEachPage = 5;
+
+  const totalPage = Math.ceil(clearData.length / dataEachPage);
+
+  const [currentData, setCurrentData] = useState(() => {
+    if (clearData.length <= dataEachPage) return data;
+    return clearData.slice(0, dataEachPage);
+  });
+
+  useEffect(() => {
+    if (clearData.length <= dataEachPage) return setCurrentData(data);
+    setCurrentData(() => {
+      if (no * dataEachPage > clearData.length)
+        return clearData.slice((no - 1) * dataEachPage);
+      return clearData.slice((no - 1) * dataEachPage, no * dataEachPage);
+    });
+  }, [data, no]);
+
+  return (
+    <div>
+      <div className="text-center flex flex-col items-center justify-center pb-2">
+        <div>{element.extraAttributes.label}</div>
+        <div className="text-sm text-muted-foreground">
+          {element.extraAttributes.helperText}
+        </div>
+      </div>
+      <div className="w-full">
+        <div className="w-full">
+          {currentData.map((item) => {
+            return (
+              <div
+                key={item.author}
+                className="w-full flex bg-white text-black border-b p-2"
+              >
+                <div className="flex-1">
+                  {item.content}
+                </div>
+                <div className="flex-none">
+                  {formatWalletAddress(item.author)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="w-full">
+          <PaginationData
+            className="justify-end"
+            no={no}
+            setNo={setNo}
+            total={totalPage}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

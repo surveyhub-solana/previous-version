@@ -16,15 +16,11 @@ export async function POST(req: Request) {
       .map((account) => account.account)
       .filter((form) => form.published);
     const validForms = publishedForms.filter((form) => {
-      console.log('form.remainSol', form.remainSol);
-      console.log('form.solPerUser', form.solPerUser);
       return (
         (form.remainSol as number) >= (form.solPerUser as number) &&
         (form.solPerUser as number) > 0
       );
     });
-
-    console.log(validForms);
 
     if (validForms.length == 0) {
       return new Response(JSON.stringify('Form not found!'), {

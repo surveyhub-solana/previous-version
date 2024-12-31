@@ -41,7 +41,6 @@ const setSectionIndex = (elements: FormElementInstance[]) => {
   const sectionField = elements.filter(
     (element) => element.type == 'SectionField'
   );
-  console.log(sectionField);
   elements.forEach((element, index) => {
     if (element.type == 'SectionField' && element.extraAttributes) {
       const extraAttributes = {

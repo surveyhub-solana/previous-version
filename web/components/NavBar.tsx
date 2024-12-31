@@ -42,7 +42,7 @@ export default function NavBar() {
             <MdDashboardCustomize />
           </Link>
         </Button>
-        <Button
+        {/* <Button
           asChild
           className="w-fit h-auto rounded-[5px] text-xl ms-2 px-6"
           variant={'secondary'}
@@ -50,7 +50,7 @@ export default function NavBar() {
           <Link href={`/`} className="w-fit">
             <FaCartArrowDown />
           </Link>
-        </Button>
+        </Button> */}
       </div>
     </nav>
   );

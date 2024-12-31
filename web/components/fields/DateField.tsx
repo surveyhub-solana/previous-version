@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import {
   ElementsType,
+  FormDataType,
   FormElement,
   FormElementInstance,
   SubmitFunction,
@@ -14,7 +15,7 @@ import useDesigner from '../hooks/useDesigner';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
-import { cn } from '@/lib/utils';
+import { cn, formatWalletAddress } from '@/lib/utils';
 import { CalendarIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
 import { BsFillCalendarDateFill } from 'react-icons/bs';
@@ -31,6 +32,7 @@ import {
 } from '../ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Switch } from '../ui/switch';
+import PaginationData from '../PaginationData';
 
 const type: ElementsType = 'DateField';
 
@@ -61,6 +63,7 @@ export const DateFieldFormElement: FormElement = {
   formComponent: FormComponent,
   propertiesComponent: PropertiesComponent,
   answerComponent: AnswerComponent,
+  dataComponent: DataComponent,
 
   validate: (
     formElement: FormElementInstance,
@@ -190,7 +193,9 @@ function AnswerComponent({
   const element = elementInstance as CustomInstance;
 
   const [date, setDate] = useState<Date | undefined>(
-    answers != undefined && answers.length != 0 ? new Date(answers[0]) : undefined
+    answers != undefined && answers.length != 0
+      ? new Date(answers[0])
+      : undefined
   );
 
   const { label, required, placeHolder, helperText } = element.extraAttributes;
@@ -206,7 +211,7 @@ function AnswerComponent({
             variant={'outline'}
             className={cn(
               'w-full justify-start text-left font-normal',
-              !date && 'text-muted-foreground',
+              !date && 'text-muted-foreground'
             )}
             disabled
           >
@@ -215,18 +220,11 @@ function AnswerComponent({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={date}
-          />
+          <Calendar mode="single" selected={date} />
         </PopoverContent>
       </Popover>
       {helperText && (
-        <p
-          className={cn(
-            'text-muted-foreground text-[0.8rem]'
-          )}
-        >
+        <p className={cn('text-muted-foreground text-[0.8rem]')}>
           {helperText}
         </p>
       )}
@@ -345,5 +343,75 @@ function PropertiesComponent({
         />
       </form>
     </Form>
+  );
+}
+
+function DataComponent({
+  data,
+  elementInstance,
+}: {
+  data: FormDataType[];
+  elementInstance: FormElementInstance;
+}) {
+  const clearData = data.filter((item) => item.content != '' && item.content);
+
+  const element = elementInstance as CustomInstance;
+
+  const [no, setNo] = useState(1);
+
+  const dataEachPage = 5;
+
+  const totalPage = Math.ceil(clearData.length / dataEachPage);
+
+  const [currentData, setCurrentData] = useState(() => {
+    if (clearData.length <= dataEachPage) return data;
+    return clearData.slice(0, dataEachPage);
+  });
+
+  useEffect(() => {
+    if (clearData.length <= dataEachPage) return setCurrentData(data);
+    setCurrentData(() => {
+      if (no * dataEachPage > clearData.length)
+        return clearData.slice((no - 1) * dataEachPage);
+      return clearData.slice((no - 1) * dataEachPage, no * dataEachPage);
+    });
+  }, [data, no]);
+
+  return (
+    <div>
+      <div className="text-center flex flex-col items-center justify-center pb-2">
+        <div>{element.extraAttributes.label}</div>
+        <div className="text-sm text-muted-foreground">
+          {element.extraAttributes.helperText}
+        </div>
+      </div>
+      <div className="w-full">
+        <div className="w-full">
+          {currentData.map((item) => {
+            return (
+              <div
+                key={item.author}
+                className="w-full flex bg-white text-black border-b p-2"
+              >
+                <div className="flex-1">
+                  {new Date(item.content).toLocaleString()}
+                </div>
+                <div className="flex-none">
+                  {formatWalletAddress(item.author)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="w-full">
+          <PaginationData
+            className="justify-end"
+            no={no}
+            setNo={setNo}
+            total={totalPage}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
