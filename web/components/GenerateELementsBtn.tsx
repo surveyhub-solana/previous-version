@@ -50,7 +50,7 @@ export default function GenerateElementsBtn({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-gradient-to-r from-[#01BDB1] from-[16%] via-[#01A6FE] via-[50%] to-[#DCB7FF] to-[86%] text-white">
+        <Button className="gap-2  text-black bg-main-right">
           <FaWandMagicSparkles className="w-4 h-4" />
           Generate
         </Button>
@@ -68,7 +68,7 @@ export default function GenerateElementsBtn({
             className="resize-none"
           />
           <Button
-            className="bg-gradient-to-r from-[#01BDB1] from-[16%] via-[#01A6FE] via-[50%] to-[#DCB7FF] to-[86%] text-white"
+            className="text-black bg-main-right"
             onClick={onGenerate}
             disabled={generating}
           >
