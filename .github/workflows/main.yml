@@ -16,7 +16,7 @@ jobs:
         with:
           token: ${{ secrets.VERCEL_TOKEN }}
           projectName: surveyhub
-          envVariableKeys: MONGODB_URI,ACCESS_CODE,SOLANA_SECRET_KEY
+          envVariableKeys: MONGODB_URI,ACCESS_CODE,SOLANA_SECRET_KEY,GEMINI_API_KEY
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           TARGET_MONGODB_URI: preview,development,production
@@ -29,6 +29,10 @@ jobs:
           SOLANA_SECRET_KEY: ${{ secrets.SOLANA_SECRET_KEY }}
           TARGET_SOLANA_SECRET_KEY: preview,development,production
           TYPE_SOLANA_SECRET_KEY: encrypted
+
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TARGET_GEMINI_API_KEY: preview,development,production
+          TYPE_GEMINI_API_KEY: encrypted
 
       - uses: amondnet/vercel-action@v20
         with:
