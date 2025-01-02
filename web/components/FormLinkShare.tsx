@@ -35,6 +35,7 @@ function FormLinkShare({ shareUrl }: { shareUrl: string }) {
               description: 'Link copied to clipboard',
             });
           }}
+          className="bg-black text-white dark:bg-white dark:text-black"
           disabled={copied}
         >
           <ImShare className="mr-2 h-4 w-4" />
@@ -49,6 +50,7 @@ function FormLinkShare({ shareUrl }: { shareUrl: string }) {
               description: 'Blinks copied to clipboard',
             });
           }}
+          className="bg-black text-white dark:bg-white dark:text-black"
           disabled={getBlinks}
         >
           <Link className="mr-2 h-4 w-4" />

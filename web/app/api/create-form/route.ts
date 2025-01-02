@@ -1,6 +1,5 @@
 import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
-import { getKeypairFromEnvironment } from '@solana-developers/helpers';
 import { getProgram, getProvider } from '@/config/anchor/index';
 import crypto from 'crypto';
 import { decode } from 'bs58';
